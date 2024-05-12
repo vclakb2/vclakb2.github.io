@@ -3,11 +3,6 @@ import mysql.connector
 import csv
 import re
 
-myConnection = mysql.connector.connect(user = 'avnadmin',
-                                       host = 'mysql-3b07a8e5-db-developer.f.aivencloud.com',
-                                       port = 13447,
-                                       database = 'DevAI')
-
 cursorObject = myConnection.cursor()
 
 def executeAndPrint(query):
