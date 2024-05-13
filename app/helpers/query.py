@@ -1,19 +1,16 @@
 import flet as ft
-import mysql.connector
-myConnection = mysql.connector.connect(user = 'avnadmin',
-        password = 'AVNS_978XTtRvLUWrowzEW-D',
-        host = 'mysql-3b07a8e5-db-developer.f.aivencloud.com',
-        port = 13447,
-        database = 'DevAI'
-    )
-    
+
 class Queries(ft.UserControl):
+    def __init__(self, connection):
+        super().__init__()
+        self.connection = connection
+
     def build(self):
         self.tasks = ft.Column()
 
         return ft.Column(
             width=1200,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            #horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
                 ft.Row(
                     controls=[
@@ -72,7 +69,7 @@ class Queries(ft.UserControl):
         return cursor.fetchone()
 
     def get_dev_country(self, e):
-        cursor = myConnection.cursor()
+        cursor = self.connection.cursor()
         # Define columns to retrieve 
         cols_text = ["devID", "countryName", "stance", "company"]
         # Format columns to flet datatype
@@ -98,7 +95,7 @@ class Queries(ft.UserControl):
         self.update()
 
     def get_countries(self, e):
-        cursor = myConnection.cursor()
+        cursor = self.connection.cursor()
         # Define columns to retrieve 
         cols_text = ['name', 'population', 'currency', 'status']
         # Format columns to flet datatype
@@ -123,7 +120,7 @@ class Queries(ft.UserControl):
         self.update()
     
     def get_tech(self, e):
-        cursor = myConnection.cursor()
+        cursor = self.connection.cursor()
         # Define columns to retrieve 
         cols_text = ['technologyName', 'dateOfPublication', 'technologyType']
         # Format columns to flet datatype
@@ -148,7 +145,7 @@ class Queries(ft.UserControl):
         self.update()
 
     def get_comp(self, e):
-        cursor = myConnection.cursor()
+        cursor = self.connection.cursor()
         # Define columns to retrieve 
         cols_text = ['companyName', 'industry', 'marketShare']
         # Format columns to flet datatype
@@ -171,21 +168,3 @@ class Queries(ft.UserControl):
 
         self.tasks.controls = [self._build_table(cols, rows)]
         self.update()
-
-
-def main(page: ft.Page):
-    page.title = "DevAI"
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.window_width = 1200      # window's width is 200 px
-    page.window_height = 800       # window's height is 200 px
-    page.window_resizable = False  # window is not resizable
-    page.update()
-
-    # create application instance
-    todo = Queries()
-
-    # add application's root control to the page
-    page.add(todo)
-
-ft.app(target=main)
-
