@@ -1,6 +1,9 @@
 import flet as ft
 
 class Queries(ft.UserControl):
+    """
+    The class representing the query page of the app
+    """
     def __init__(self, connection):
         super().__init__()
         self.connection = connection
@@ -15,6 +18,8 @@ class Queries(ft.UserControl):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
                 ft.Row(
+                    # Define the tabs for queries here
+                    # The on click must point to the correct function
                     controls=[
                         ft.FilledButton(
                             "Get Developers", 
@@ -49,6 +54,7 @@ class Queries(ft.UserControl):
         )
     
 
+    # Heler method to build a table from a query output
     def _build_table(self, cols, rows):
         return ft.DataTable(
                 border=ft.border.all(2, "white"),
@@ -58,6 +64,10 @@ class Queries(ft.UserControl):
             )
 
 
+    # Function that specifies subquert behavior
+    # In this case e.data represents the button index
+    # We alter the conditon when we want to provide a subquery
+    # Note a condition can also be a order by or group by if necessary
     def select_button_dev(self, e):
         ind = e.data
         if ind == "0":
@@ -72,6 +82,8 @@ class Queries(ft.UserControl):
         print(self.conditions)
         self.get_dev_country(e)
 
+
+    # Function representing a query tab output
     def get_dev_country(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
@@ -86,13 +98,14 @@ class Queries(ft.UserControl):
         if self.conditions != None:
             query += self.conditions
 
+        # Reset a condition after querying
         self.conditions = None
 
 
         cursor.execute(query)
         result = cursor.fetchall()
 
-        # Format columns
+        # Format columns to flet output
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text] 
 
         # Format results into flet rows
@@ -102,8 +115,11 @@ class Queries(ft.UserControl):
             for j in i:
                 cells.append(ft.DataCell(ft.Text(j)))
             rows.append(ft.DataRow(cells))
+        
+        # Add table output to page
+        self.tasks.controls = [self._build_table(cols, rows)]
 
-
+        # Create subquery button
         butt = ft.CupertinoSegmentedButton(
                 selected_index=0 if e.data == '' else int(e.data),
                 selected_color=ft.colors.BLUE,
@@ -120,12 +136,9 @@ class Queries(ft.UserControl):
                     ),
                 ],
             )
-        self.tasks.controls = [self._build_table(cols, rows)]
 
-
-        self.tasks.controls.append(
-            butt
-        )
+        # Add subquery button to page
+        self.tasks.controls.append(butt)
         self.update()
 
     def get_countries(self, e):
@@ -156,7 +169,11 @@ class Queries(ft.UserControl):
                 cells.append(ft.DataCell(ft.Text(j)))
             rows.append(ft.DataRow(cells))
 
-        # Input selection
+        # Add table to output
+        self.tasks.controls = [self._build_table(cols, rows)]
+
+
+        # Switch function that called when the switch is changed
         def switch(e):
             if e.data == 'true':
                 e.data = True
@@ -166,6 +183,8 @@ class Queries(ft.UserControl):
                 self.conditions = "ORDER BY population DESC"
             self.get_countries(e)
 
+
+        # Switch object for our subquery
         s = ft.Switch(
             label="Ordered: ASC",
             value=True if e.data == '' or e.data == True else False,
@@ -175,7 +194,7 @@ class Queries(ft.UserControl):
             on_change = switch
         )
 
-        self.tasks.controls = [self._build_table(cols, rows)]
+        # Add subquery to page
         self.tasks.controls.append(s)
         self.update()
 
@@ -208,17 +227,24 @@ class Queries(ft.UserControl):
                 cells.append(ft.DataCell(ft.Text(j)))
             rows.append(ft.DataRow(cells))
 
+        # Adds table to page
+        self.tasks.controls = [self._build_table(cols, rows)]
 
+        # Sets subquery to text field value
         def select(e):
             self.conditions = f"WHERE companyName = '{tb1.content.value}'"
             self.get_comp(e)
 
+        # Creates a text input field
         tb1 = ft.Container(
             content = ft.TextField(label="Company Name"),
             width = 200,
         )
+
+        # Button that submits text field
         b = ft.ElevatedButton(text="Submit", on_click=select)
-        self.tasks.controls = [self._build_table(cols, rows)]
+
+        # Adds button and text field to page
         self.tasks.controls.append(tb1)
         self.tasks.controls.append(b)
         self.update()
