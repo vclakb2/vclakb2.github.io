@@ -15,15 +15,15 @@ class Navbar(ft.UserControl):
             controls=[
                 ft.Container(height=12),
                 ft.NavigationDrawerDestination(
-                    label="Item 1",
-                    icon=ft.icons.DOOR_BACK_DOOR_OUTLINED,
-                    selected_icon_content=ft.Icon(ft.icons.DOOR_BACK_DOOR),
+                    label="Home",
+                    icon=ft.icons.HOME_OUTLINED,
+                    selected_icon_content=ft.Icon(ft.icons.HOME),
                 ),
                 ft.Divider(thickness=2),
                 ft.NavigationDrawerDestination(
-                    icon_content=ft.Icon(ft.icons.MAIL_OUTLINED),
-                    label="Item 2",
-                    selected_icon=ft.icons.MAIL,
+                    icon_content=ft.Icon(ft.icons.PERSON_2_OUTLINED),
+                    label="Developer Insights",
+                    selected_icon=ft.icons.PERSON_2_ROUNDED,
                 ),
                 ft.Divider(thickness=2),
                 ft.NavigationDrawerDestination(

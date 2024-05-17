@@ -16,11 +16,20 @@ class DevAI:
         self.page.views.clear()
         self.page.views.append(
             View(
+                horizontal_alignment= ft.CrossAxisAlignment.CENTER,
+                vertical_alignment= ft.CrossAxisAlignment.CENTER,
                 drawer = self.navbar,
                 route='/',
                 controls = [
-                ft.AppBar(),
-                ft.Text(value="Home", size = 30),
+                    ft.AppBar(),
+                    ft.Column (
+                        horizontal_alignment= ft.CrossAxisAlignment.CENTER,
+                        controls = [
+                            ft.Text(value="Welcome to DevAI", size = 30),
+                            ft.Text(value="Get the best insights about modern developers and AI!", size=20),
+                            ft.Text(value="Click the hamburger to see what insights we have available", size=15),
+                        ]
+                    )
                 ],
             )
         )
