@@ -1,6 +1,6 @@
 import flet as ft
 
-class Queries(ft.UserControl):
+class MiscQueries(ft.UserControl):
     """
     The class representing the query page of the app
     """
@@ -17,7 +17,7 @@ class Queries(ft.UserControl):
             width=1200,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
-                ft.Text("AI Insights", size =20),
+                ft.Text("Other Insights", size =20),
                 ft.Row(
                     # Define the tabs for queries here
                     # The on click must point to the correct function

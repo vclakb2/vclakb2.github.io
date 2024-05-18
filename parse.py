@@ -78,6 +78,4 @@ Industry
 Technology
     Technology Name
     Technology type (system, framework, language, database)
-
-
 """

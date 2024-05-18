@@ -1,6 +1,7 @@
 from flet import View, RouteChangeEvent
 from helpers.nav import Navbar
 from helpers.query import Queries
+from helpers.misc_query import MiscQueries
 import flet as ft
 class DevAI:
     def __init__(self, page, connection):
@@ -34,12 +35,20 @@ class DevAI:
             )
         )
 
-        if self.page.route == '/store':
+        if self.page.route == '/ai':
             self.page.views.append(
                 View(
                     drawer = self.navbar,
-                    route='/store',
+                    route='/ai',
                     controls = [ft.AppBar(),Queries(self.connection)],
+                )
+            )
+        if self.page.route == '/misc':
+            self.page.views.append(
+                View(
+                    drawer = self.navbar,
+                    route='/misc',
+                    controls = [ft.AppBar(),MiscQueries(self.connection)],
                 )
             )
 
