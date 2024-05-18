@@ -1,4 +1,5 @@
 import flet as ft
+import os
 
 class DevQueries(ft.UserControl):
     """
@@ -12,7 +13,9 @@ class DevQueries(ft.UserControl):
     def build(self):
         self.tasks = ft.Column(width=1200,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER)
-
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        image_path = os.path.join(base_dir, 'resources', 'dallesoftwaredev.jpg')
+        
         return ft.Column(
             width=1200,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -23,6 +26,7 @@ class DevQueries(ft.UserControl):
                     # Define the tabs for queries here
                     # The on click must point to the correct function
                     controls=[
+                        
                         ft.FilledButton(
                             "Get Developers", 
                             icon=ft.icons.ADD, 
