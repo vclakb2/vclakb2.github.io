@@ -1,4 +1,4 @@
-from flet import View, RouteChangeEvent
+from flet import View, RouteChangeEvent, Image
 from helpers.nav import Navbar
 from helpers.dev_query import DevQueries
 from helpers.misc_query import MiscQueries
@@ -30,6 +30,8 @@ class DevAI:
                             ft.Text(value="Welcome to DevAI", size = 30),
                             ft.Text(value="Get the best insights about modern developers and AI!", size=20),
                             ft.Text(value="Click the hamburger to see what insights we have available", size=15),
+                            ft.Image(src="/Users/akhilvaid/Desktop/Uchicago 2023/databases/vclakb2.github.io/app/resources/dallehomepage.jpg", width=500, height=500),
+                            
                         ]
                     )
                 ],
