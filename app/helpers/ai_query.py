@@ -250,3 +250,4 @@ class AIQueries(ft.UserControl):
         self.tasks.controls.append(tb1)
         self.tasks.controls.append(b)
         self.update()
+

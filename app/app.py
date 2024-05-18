@@ -1,3 +1,4 @@
+import os
 from flet import View, RouteChangeEvent, Image
 from helpers.nav import Navbar
 from helpers.dev_query import DevQueries
@@ -13,9 +14,14 @@ class DevAI:
         self.page.on_route_change = self.route_change
         self.page.on_view_pop = self.view_pop
         self.page.go(self.page.route)
+        
 
     def route_change(self, e: RouteChangeEvent) -> None:
         self.page.views.clear()
+        # Construct the path programmatically
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        image_path = os.path.join(base_dir, 'resources', 'dallehomepage.jpg')
+        
         self.page.views.append(
             View(
                 horizontal_alignment= ft.CrossAxisAlignment.CENTER,
@@ -30,7 +36,7 @@ class DevAI:
                             ft.Text(value="Welcome to DevAI", size = 30),
                             ft.Text(value="Get the best insights about modern developers and AI!", size=20),
                             ft.Text(value="Click the hamburger to see what insights we have available", size=15),
-                            ft.Image(src="/Users/akhilvaid/Desktop/Uchicago 2023/databases/vclakb2.github.io/app/resources/dallehomepage.jpg", width=500, height=500),
+                            ft.Image(src=image_path, width=500, height=500),
                             
                         ]
                     )
