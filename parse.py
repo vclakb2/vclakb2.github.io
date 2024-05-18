@@ -1,13 +1,109 @@
 import mysql.connector
-import pandas as pd
+import csv
 
 
-filepath = "~/OneDrive/Documents/db/survey_results_public.csv"
+filepath = "~/survey_results_public.csv"
+
+PLANNING = 'Project planning'
+TESTING = 'Testing code'
+REVIEWING = 'Committing and reviewing code'
+DEPLOYMENT = 'Deployment and monitoring'
+COLLABORATE = 'Collaborating with teammates'
+DEBUGGING = 'Debugging and getting help'
+WRITING = 'Writing code'
+LEARNING = 'Learning about a codebase'
+DOCUMENTING = 'Documenting code'
+
+INTERESTED = 'INTERESTED'
+USING = 'USING'
+NOT_USING = 'NOT USING'
+
+VERY_DIFFERENT = 'VERY DIFFERENT'
+NEUTRAL = 'NEUTRAL'
+SOMEWHAT_SIMILAR = 'SOMEWHAT SIMILAR'
+VERY_SIMILAR = 'VERY SIMILAR'
+SOMEWHAT_DIFFERENT = 'SOMEWHAT DIFFERENT'
 
 def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath):
-    pd.read_csv(filepath)
     cursor = connection.cursor()
+    
+    with open(filepath, newline='') as datafile:
+        reader = csv.reader(datafile)
+        for row in reader:
+            id = row['ResponseId']
+
+            # AIDevWorkflowUse
+            workflow_use = [row['AIToolInterested in Using'].split(';'), 
+                            row['AIToolCurrently Using'].split(';'), 
+                            row['AIToolNot interested in Using'].split(';')]
+            keys = [INTERESTED, USING, NOT_USING]
+
+            planning, testing, reviewing, deployment, collaborate, debugging, writing, learning, documenting = ('NULL' for _ in range(9))
+            for ind, category in enumerate(workflow_use):
+                if PLANNING in category:
+                    planning = keys[ind]
+                if TESTING in category:
+                    testing = keys[ind]
+                if REVIEWING in category:
+                    reviewing = keys[ind]
+                if DEPLOYMENT in category:
+                    deployment = keys[ind]
+                if COLLABORATE in category:
+                    collaborate = keys[ind]
+                if DEBUGGING in category:
+                    debugging = keys[ind]
+                if WRITING in category:
+                    writing = keys[ind]
+                if LEARNING in category:
+                    learning = keys[ind]
+                if DOCUMENTING in category:
+                    documenting = keys[ind]
+
+            query = "INSERT INTO AIDevWorkflowUse VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            values = (id, planning, learning, documenting, writing, debugging, testing, reviewing, deployment, collaborate)
+            cursor.execute(query, values)
+            connection.commit()
+
+
+            # AIWorkflowChangein1Year
+            workflow_change = [row['AINextVery different'].split(';'), 
+                               row['AINextSomewhat different'].split(';'), 
+                               row['AINextNeither different nor similar'].split(';'),
+                               row['AINextSomewhat similar'].split(';'),
+                               row['AINextVery similar'].split(';')]
+            keys = [VERY_DIFFERENT, SOMEWHAT_DIFFERENT, NEUTRAL, SOMEWHAT_SIMILAR, VERY_SIMILAR]
+
+            planning, testing, reviewing, deployment, collaborate, debugging, writing, learning, documenting = ('NULL' for _ in range(9))
+            for ind, category in enumerate(workflow_change):
+                if PLANNING in category:
+                    planning = keys[ind]
+                if TESTING in category:
+                    testing = keys[ind]
+                if REVIEWING in category:
+                    reviewing = keys[ind]
+                if DEPLOYMENT in category:
+                    deployment = keys[ind]
+                if COLLABORATE in category:
+                    collaborate = keys[ind]
+                if DEBUGGING in category:
+                    debugging = keys[ind]
+                if WRITING in category:
+                    writing = keys[ind]
+                if LEARNING in category:
+                    learning = keys[ind]
+                if DOCUMENTING in category:
+                    documenting = keys[ind]
+
+            query = "INSERT INTO AIWorkflowChangein1Year VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            values = (id, debugging, testing, deployment, reviewing, documenting, learning, planning, writing, collaborate)
+            cursor.execute(query, values)
+            connection.commit()
+
+            
+
     cursor.close()
+
+
 
 def main():
     myConnection = mysql.connector.connect(user = 'avnadmin',
@@ -78,6 +174,5 @@ Industry
 Technology
     Technology Name
     Technology type (system, framework, language, database)
-
-
 """
+
