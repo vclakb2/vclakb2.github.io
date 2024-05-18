@@ -47,7 +47,115 @@ OFFLINE = ['Books / Physical media',
             'Online Courses or Certification', 
             'On the job training', 
             'Other online resources (e.g., videos, blogs, forum)', 
-            'School (i.e., University, College, etc)']
+            'School (i.e., University, College, etc)']\
+
+LANGUAGES = ["Ada",
+            "Apex",
+            "APL",
+            "Assembly",
+            "Bash/Shell (all shells)",
+            "C",
+            "C#",
+            "C++",
+            "Clojure",
+            "Cobol",
+            "Crystal",
+            "Dart",
+            "Delphi",
+            "Elixir",
+            "Erlang",
+            "F#",
+            "Flow",
+            "Fortran",
+            "GDScript",
+            "Go",
+            "Groovy",
+            "Haskell",
+            "HTML/CSS",
+            "Java",
+            "JavaScript",
+            "Julia",
+            "Kotlin",
+            "Lisp",
+            "Lua",
+            "MATLAB",
+            "Nim",
+            "Objective-C",
+            "OCaml",
+            "Perl",
+            "PHP",
+            "PowerShell",
+            "Prolog",
+            "Python",
+            "R",
+            "Raku",
+            "Ruby",
+            "Rust",
+            "SAS",
+            "Scala",
+            "Solidity",
+            "SQL",
+            "Swift",
+            "TypeScript",
+            "VBA",
+            "Visual Basic (.Net)",
+            "Zig"]
+
+OS = ["AIX",
+    "Android",
+    "Arch",
+    "BSD",
+    "ChromeOS",
+    "Cygwin",
+    "Debian",
+    "Fedora",
+    "Haiku",
+    "iOS",
+    "iPadOS",
+    "MacOS",
+    "Other Linux-based",
+    "Red Hat",
+    "Solaris",
+    "Ubuntu",
+    "Windows",
+    "Windows Subsystem for Linux (WSL)"]
+
+LIBS = [".NET (5+)",
+        ".NET Framework (1.0 - 4.8)",
+        ".NET MAUI",
+        "Apache Kafka",
+        "Apache Spark",
+        "Capacitor",
+        "Cordova",
+        "CUDA",
+        "Electron",
+        "Flutter",
+        "GTK",
+        "Hadoop",
+        "Hugging Face Transformers",
+        "Ionic",
+        "JAX",
+        "Keras",
+        "Ktor",
+        "MFC",
+        "Micronaut",
+        "Numpy",
+        "Opencv",
+        "OpenGL",
+        "Pandas",
+        "Qt",
+        "Quarkus",
+        "RabbitMQ",
+        "React Native",
+        "Scikit-Learn",
+        "Spring Framework",
+        "SwiftUI",
+        "Tauri",
+        "TensorFlow",
+        "Tidyverse",
+        "Torch/PyTorch",
+        "Uno Platform",
+        "Xamarin"]
 
 def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath):
     cursor = connection.cursor()
@@ -62,6 +170,19 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
         values = (entry, False)
         cursor.execute(query, values)
         connection.commit()
+
+    # Technology
+    query = "INSERT INTO Technology VALUES (%s, %s)"
+    
+    for entry in LANGUAGES:
+        values = (entry, 'LANGUAGE')
+    for entry in OS:
+        values = (entry, 'OPERATING SYSTEM')
+    for entry in LIBS:
+        values = (entry, 'LIBRARIES')
+
+    cursor.execute(query, values)
+    connection.commit()
     
     with open(filepath, newline='') as datafile:
         reader = csv.reader(datafile)
@@ -133,7 +254,18 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
             query = "INSERT INTO AIWorkflowChangein1Year VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             values = (id, debugging, testing, deployment, reviewing, documenting, learning, planning, writing, collaborate)
             cursor.execute(query, values)
-            connection.commit()         
+            connection.commit()
+
+            # LearnsFrom
+            sources = row['LearnCode'].split(';') + row['LearnCodeOnline'].split(';')
+            for source in sources:
+                if source in ONLINE or source in OFFLINE:
+                    query = "INSERT INTO LearnsFrom VALUES (%s, %s)"
+                    values = (id, source)
+                    cursor.execute(query, values)
+                    connection.commit()
+
+            # 
 
     cursor.close()
 
@@ -161,7 +293,6 @@ Developer
     Arrangement Status - F
     codingActivity - G
     Education Level - H
-    Compensation - I
     yearsCoding - L
     yearsProCoding - M
     devExperience - BN
