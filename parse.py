@@ -24,8 +24,44 @@ SOMEWHAT_SIMILAR = 'SOMEWHAT SIMILAR'
 VERY_SIMILAR = 'VERY SIMILAR'
 SOMEWHAT_DIFFERENT = 'SOMEWHAT DIFFERENT'
 
+ONLINE = ['Formal documentation provided by the owner of the tech', 
+            'Blogs with tips and tricks', 
+            'Books', 
+            'Recorded coding sessions', 
+            'How-to videos', 
+            'Video-based Online Courses', 
+            'Written-based Online Courses', 
+            'Auditory material (e.g., podcasts)', 
+            'Online challenges (e.g., daily or weekly coding challenges)', 
+            'Written Tutorials', 
+            'Click to write Choice 20', 
+            'Stack Overflow', 
+            'Interactive tutorial', 
+            'Programming Games']
+
+OFFLINE = ['Books / Physical media',
+            'Coding Bootcamp',
+            'Colleague', 
+            'Friend or family member', 
+            'Hackathons (virtual or in-person)', 
+            'Online Courses or Certification', 
+            'On the job training', 
+            'Other online resources (e.g., videos, blogs, forum)', 
+            'School (i.e., University, College, etc)']
+
 def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath):
     cursor = connection.cursor()
+    # EducationSource
+    for entry in ONLINE:
+        query = "INSERT INTO EducationSource VALUES (%s, %s)"
+        values = (entry, True)
+        cursor.execute(query, values)
+        connection.commit()
+    for entry in OFFLINE:
+        query = "INSERT INTO EducationSource VALUES (%s, %s)"
+        values = (entry, False)
+        cursor.execute(query, values)
+        connection.commit()
     
     with open(filepath, newline='') as datafile:
         reader = csv.reader(datafile)
@@ -97,9 +133,7 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
             query = "INSERT INTO AIWorkflowChangein1Year VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             values = (id, debugging, testing, deployment, reviewing, documenting, learning, planning, writing, collaborate)
             cursor.execute(query, values)
-            connection.commit()
-
-            
+            connection.commit()         
 
     cursor.close()
 
