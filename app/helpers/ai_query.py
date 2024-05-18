@@ -90,12 +90,14 @@ class AIQueries(ft.UserControl):
 
     # Helper method to build a table from a query output
     def _build_table(self, cols, rows):
-        return ft.DataTable(
+        lv = ft.ListView(expand=0, spacing=10, padding=20, auto_scroll=False,  height=300)
+        lv.controls.append(ft.DataTable(
                 border=ft.border.all(2, "white"),
                 border_radius=10,
                 columns=cols,
                 rows= rows
-            )
+            ))
+        return lv
 
 
     # Function that specifies subquery behavior
