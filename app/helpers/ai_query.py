@@ -162,10 +162,10 @@ class AIQueries(ft.UserControl):
             attribute_display_name = attribute_display_names[attribute]
             cols_text = [
                 'industry',
-                f'{attribute_display_name}\nNOT USING (%)',
-                f'{attribute_display_name}\nINTERESTED (%)',
-                f'{attribute_display_name}\nUSING (%)',
-                f'{attribute_display_name}\nNULL (%)',
+                f'NOT USING (%)',
+                f'INTERESTED (%)',
+                f'USING (%)',
+                f'NULL (%)',
             ]
             cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
@@ -213,7 +213,7 @@ class AIQueries(ft.UserControl):
             ]
                 rows.append(ft.DataRow(cells))
 
-            tables.append(self._build_table_static(cols, rows, attribute))
+            tables.append(self._build_table_static(cols, rows, attribute_display_name))
     
         self.tasks.controls = tables
         self.update()
