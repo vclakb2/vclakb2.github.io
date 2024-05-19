@@ -12,10 +12,11 @@ myConnection = mysql.connector.connect(user = 'avnadmin',
 
 def main(page: ft.Page):
     page.title = "DevAI"
+    page.scroll = 'auto'
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.window_width = 1200      
     page.window_height = 800       
-    page.window_resizable = False  
+    page.window_resizable = True 
     page.theme = ft.theme.Theme(
         font_family="Verdana")
     page.theme.page_transitions.windows = "cupertino"

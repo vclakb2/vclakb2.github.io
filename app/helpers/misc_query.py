@@ -24,28 +24,31 @@ class MiscQueries(ft.UserControl):
                     # The on click must point to the correct function
                     controls=[
                         ft.FilledButton(
-                            "Get Developers", 
-                            icon=ft.icons.ADD, 
+                            "Education % by Country", 
+                            icon=ft.icons.DATA_THRESHOLDING_ROUNDED, 
                             style =  ft.ButtonStyle(
-                                bgcolor = "Red"
+                                bgcolor = "Red",
+                                color = "White"
                             ), 
-                            on_click=self.get_dev_country
+                            on_click=self.country_edu
                         ),
                         ft.FilledButton(
-                            "Get Countries", 
-                            icon=ft.icons.ADD, 
+                            "Avg wage per Country", 
+                            icon=ft.icons.DATA_THRESHOLDING_ROUNDED, 
                             style =  ft.ButtonStyle(
-                                bgcolor = "Blue"
+                                bgcolor = "Blue",
+                                color= "White"
                             ), 
-                            on_click=self.get_countries
+                            on_click=self.country_wage
                         ),
                         ft.FilledButton(
-                            "Get Company", 
-                            icon=ft.icons.ADD, 
+                            "Avg Wage by Technology", 
+                            icon=ft.icons.DATA_THRESHOLDING_ROUNDED, 
                             style =  ft.ButtonStyle(
-                                bgcolor = "Green"
-                            ),
-                            on_click=self.get_comp
+                                bgcolor = "Green",
+                                color = "White"
+                            ), 
+                            on_click=self.tech_wage
                         ),
                     ],
                 ),
@@ -58,57 +61,67 @@ class MiscQueries(ft.UserControl):
 
     # Heler method to build a table from a query output
     def _build_table(self, cols, rows):
-        return ft.DataTable(
+        lv = ft.ListView(expand=0, spacing=10, padding=20, auto_scroll=False,  height=400)
+        lv.controls.append(ft.DataTable(
                 border=ft.border.all(2, "white"),
                 border_radius=10,
                 columns=cols,
                 rows= rows
-            )
+            ))
+        return lv
 
 
-    # Function that specifies subquert behavior
-    # In this case e.data represents the button index
-    # We alter the conditon when we want to provide a subquery
-    # Note a condition can also be a order by or group by if necessary
-    def select_button_dev(self, e):
-        ind = e.data
-        if ind == "0":
-            self.conditions = None
-        elif ind == "1":
-            self.conditions = "WHERE countryName = 'testCountry'"
-        elif ind == "2":
-            print("changing")
-            self.conditions = "WHERE countryName = 'bruh'"
-        else:
-            self.conditions = None
-        print(self.conditions)
-        self.get_dev_country(e)
-
-
-    # Function representing a query tab output
-    def get_dev_country(self, e):
+   
+    def country_edu(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ["devID", "countryName", "stance", "company"]        
+        cols_text = ['Country', '%Elementary', '%High', '%Some Col.', '%Assoc.', '%Bachelors', '%Masters', '%PHD+']
+        # Format columns to flet datatype
+        cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
         query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Developer
+        SELECT 
+            countryName,
+            ROUND(COUNT(CASE WHEN educationLevel = \'Primary/Elementary School\' THEN 1 END)/COUNT(*), 2) AS Elementary,
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Secondary/High School\' THEN 1 END)/COUNT(*), 2) AS \'High School\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Some college/university study without earning a degree\' THEN 1 END) / COUNT(*), 2) AS \'Some College/No degree\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Associate degree (A.A., A.S., etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Associates\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Bachelor\\\'s degree (B.A., B.S., B.Eng., etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Bachelors\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Master\\\'s degree (M.A., M.S., M.Eng., MBA, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Masters\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Professional degree (JD, MD, Ph.D, Ed.D, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'PHD+\'
+        FROM 
+            Developer
+        GROUP BY 
+            countryName
+        ORDER BY 
+            COUNT(educationLevel) DESC;
         """
-        
-        # If a condition exists then add it to the query
+
         if self.conditions != None:
-            query += self.conditions
+            query = f"""
+            SELECT 
+                countryName,
+                ROUND(COUNT(CASE WHEN educationLevel = \'Primary/Elementary School\' THEN 1 END)/COUNT(*), 2) AS Elementary,
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Secondary/High School\' THEN 1 END)/COUNT(*), 2) AS \'High School\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Some college/university study without earning a degree\' THEN 1 END) / COUNT(*), 2) AS \'Some College/No degree\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Associate degree (A.A., A.S., etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Associates\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Bachelor\\\'s degree (B.A., B.S., B.Eng., etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Bachelors\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Master\\\'s degree (M.A., M.S., M.Eng., MBA, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Masters\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Professional degree (JD, MD, Ph.D, Ed.D, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'PHD+\'
+            FROM 
+            Developer
+            GROUP BY 
+                countryName
+            {self.conditions}
+            ORDER BY 
+                countryName
+            """
 
-        # Reset a condition after querying
         self.conditions = None
-
 
         cursor.execute(query)
         result = cursor.fetchall()
-
-        # Format columns to flet output
-        cols = [ft.DataColumn(ft.Text(i)) for i in cols_text] 
 
         # Format results into flet rows
         rows = []
@@ -117,46 +130,53 @@ class MiscQueries(ft.UserControl):
             for j in i:
                 cells.append(ft.DataCell(ft.Text(j)))
             rows.append(ft.DataRow(cells))
-        
-        # Add table output to page
+
+        # Adds table to page
         self.tasks.controls = [self._build_table(cols, rows)]
 
-        # Create subquery button
-        butt = ft.CupertinoSegmentedButton(
-                selected_index=0 if e.data == '' else int(e.data),
-                selected_color=ft.colors.BLUE,
-                on_change=self.select_button_dev,
-                controls=[
-                    ft.Text("All"),
-                    ft.Container(
-                        padding=ft.padding.symmetric(0, 30),
-                        content=ft.Text("Country = testCountry"),
-                    ),
-                    ft.Container(
-                        padding=ft.padding.symmetric(0, 10),
-                        content=ft.Text("Country = bruh"),
-                    ),
-                ],
-            )
+        # Sets subquery to text field value
+        def select(e):
+            self.conditions = f"HAVING countryName = '{tb1.content.value}'"
+            self.country_edu(e)
 
-        # Add subquery button to page
-        self.tasks.controls.append(butt)
+        # Creates a text input field
+        tb1 = ft.Container(
+            content = ft.TextField(label="Country"),
+            width = 200,
+        )
+
+        # Button that submits text field
+        b = ft.ElevatedButton(text="Submit", on_click=select)
+
+        # Adds button and text field to page
+        self.tasks.controls.append(tb1)
+        self.tasks.controls.append(b)
         self.update()
 
-    def get_countries(self, e):
+    def country_wage(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ['name', 'population', 'currency', 'status']
+        cols_text = ['Country', 'Average Salary', 'Currency']
         # Format columns to flet datatype
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
         query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Country
+        SELECT
+            countryName, ROUND(AVG(compensation),2) as  a, Country.currency  From Developer
+            JOIN Country on Country.name = Developer.countryName
+        GROUP BY countryName
+        ORDER BY a ASC
         """
 
         if self.conditions != None:
-            query += self.conditions
+            query = f"""
+                SELECT
+                countryName, ROUND(AVG(compensation),2) as  a, Country.currency  From Developer
+                JOIN Country on Country.name = Developer.countryName
+            GROUP BY countryName
+            {self.conditions}
+            """
 
         self.conditions = None
 
@@ -179,11 +199,11 @@ class MiscQueries(ft.UserControl):
         def switch(e):
             if e.data == 'true':
                 e.data = True
-                self.conditions = "ORDER BY population ASC"
+                self.conditions = "ORDER BY a ASC"
             else:
                 e.data = False
-                self.conditions = "ORDER BY population DESC"
-            self.get_countries(e)
+                self.conditions = "ORDER BY a DESC"
+            self.country_wage(e)
 
 
         # Switch object for our subquery
@@ -201,20 +221,30 @@ class MiscQueries(ft.UserControl):
         self.update()
 
 
-    def get_comp(self, e):
+    def tech_wage(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ['companyName', 'industry', 'marketShare']
+        cols_text = ['Tech Name', 'Salary']
         # Format columns to flet datatype
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
         query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Company
+        Select t.technologyName, ROUND(AVG(d.compensation),2) as Salary From Technology as t
+        JOIN Uses as u on t.technologyName = u.technologyName
+        JOIN Developer as d on d.devID = u.devID
+        GROUP BY t.technologyName
+        ORDER by Salary DESC;
         """
 
         if self.conditions != None:
-            query += self.conditions
+            query = f"""
+            Select t.technologyName, ROUND(AVG(d.compensation),2) as Salary From Technology as t
+            JOIN Uses as u on t.technologyName = u.technologyName
+            JOIN Developer as d on d.devID = u.devID
+            {self.conditions}
+            GROUP BY t.technologyName
+            """
 
         self.conditions = None
 
@@ -234,12 +264,12 @@ class MiscQueries(ft.UserControl):
 
         # Sets subquery to text field value
         def select(e):
-            self.conditions = f"WHERE companyName = '{tb1.content.value}'"
-            self.get_comp(e)
+            self.conditions = f"WHERE t.technologyName = '{tb1.content.value}'"
+            self.tech_wage(e)
 
         # Creates a text input field
         tb1 = ft.Container(
-            content = ft.TextField(label="Company Name"),
+            content = ft.TextField(label="Technology"),
             width = 200,
         )
 
