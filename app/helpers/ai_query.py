@@ -12,8 +12,8 @@ class AIQueries(ft.UserControl):
     def build(self):
         self.tasks = ft.Column(width=1200,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER)
-
-        return ft.Column(
+        lv = ft.ListView(expand=0, spacing=20, padding=20, auto_scroll=False,  height=600)
+        lv.controls.append(ft.Column(
             width=1200,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
@@ -65,12 +65,13 @@ class AIQueries(ft.UserControl):
                 ft.Text("Output:"),
                 self.tasks,
             ],
-        )
+        ))
+        return lv
     
 
     # Helper method to build a table from a query output
     def _build_table(self, cols, rows):
-        lv = ft.ListView(expand=0, spacing=10, padding=20, auto_scroll=False,  height=400)
+        lv = ft.ListView(expand=0, spacing=20, padding=20, auto_scroll=False,  height=400)
         lv.controls.append(ft.DataTable(
                 border=ft.border.all(2, "white"),
                 border_radius=10,
@@ -97,26 +98,88 @@ class AIQueries(ft.UserControl):
 
     def ai_use_diff_for_industries(self, e):
         cursor = self.connection.cursor()
-        cols_text = ['industry', 'devID', 'projectPlanning', 'writingCode']
-        cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
-        query = """
-        SELECT d.industry, a.devID, a.projectPlanning, a.writingCode
-        FROM AIDevWorkflowUse AS a
-        JOIN Developer AS d ON a.devID = d.devID
-        JOIN Industry AS c ON d.industry = c.industry
-        """
+        attributes = [
+            'projectPlanning',
+            'learnAboutCodeBase',
+            'documentingCode',
+            'writingCode',
+            'debuggingAndGettingHelp',
+            'testingCode',
+            'commitingAndReviewingChange',
+            'deploymentAndMonitoring',
+            'collaboratingWithTeammates'
+        ]
 
-        cursor.execute(query)
-        result = cursor.fetchall()
+        tables = []
 
-        rows = []
-        for i in result:
-            cells = [ft.DataCell(ft.Text(j)) for j in i]
-            rows.append(ft.DataRow(cells))
+        for attribute in attributes:
+            query = f"""
+            SELECT
+                ind.industry,
+                SUM(CASE WHEN wf.{attribute} = 'NOT USING' THEN 1 ELSE 0 END) AS {attribute}_NOT_USING,
+                SUM(CASE WHEN wf.{attribute} = 'INTERESTED' THEN 1 ELSE 0 END) AS {attribute}_INTERESTED,
+                SUM(CASE WHEN wf.{attribute} = 'USING' THEN 1 ELSE 0 END) AS {attribute}_USING,
+                SUM(CASE WHEN wf.{attribute} IS NULL THEN 1 ELSE 0 END) AS {attribute}_NULL
+            FROM
+                Developer AS dev
+            JOIN
+                AIDevWorkflowUse AS wf ON dev.devID = wf.devID
+            JOIN
+                Industry AS ind ON dev.industry = ind.industry
+            GROUP BY
+                ind.industry;
+            """
 
-        self.tasks.controls = [self._build_table(cols, rows)]
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+            cols_text = [
+                'industry',
+                f'{attribute}\n_NOT_USING',
+                f'{attribute}\n_NOT_USING_%',
+                f'{attribute}\n_INTERESTED',
+                f'{attribute}\n_INTERESTED_%',
+                f'{attribute}\n_USING',
+                f'{attribute}\n_USING_%',
+                f'{attribute}\n_NULL',
+                f'{attribute}\n_NULL_%'
+            ]
+            cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
+
+            rows = []
+            for row in result:
+                # print(row)
+                industry = row[0]
+                not_using = row[1]
+                interested = row[2]
+                using = row[3]
+                null = row[4]
+                total = not_using + interested + using + null
+                
+                not_using_percent = (not_using / total) * 100 if total > 0 else 0
+                interested_percent = (interested / total) * 100 if total > 0 else 0
+                using_percent = (using / total) * 100 if total > 0 else 0
+                null_percent = (null / total) * 100 if total > 0 else 0
+
+                cells = [
+                    ft.DataCell(ft.Text(industry)),
+                    ft.DataCell(ft.Text(f"{not_using}")),
+                    ft.DataCell(ft.Text(f"{not_using_percent:.2f}")),
+                    ft.DataCell(ft.Text(f"{interested}")),
+                    ft.DataCell(ft.Text(f"{interested_percent:.2f}")),
+                    ft.DataCell(ft.Text(f"{using}")),
+                    ft.DataCell(ft.Text(f"{using_percent:.2f}")),
+                    ft.DataCell(ft.Text(f"{null}")),
+                    ft.DataCell(ft.Text(f"{null_percent:.2f}")),
+                ]
+                rows.append(ft.DataRow(cells))
+
+            tables.append(self._build_table(cols, rows))
+    
+        self.tasks.controls = tables
         self.update()
+
 
     def java_dev_using_ai(self, e):
         cursor = self.connection.cursor()
