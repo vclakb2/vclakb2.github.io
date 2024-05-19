@@ -232,7 +232,7 @@ class AIQueries(ft.UserControl):
         JOIN Uses as u ON d.devId = u.devId
         WHERE u.technologyName = 'Java'
         AND w.commitingAndReviewingChange = 'USING'
-        AND s.stance IN ('Very favorable', 'Favorable', 'Indifferent', 'Unfavorable', 'Unsure', 'NA')
+        AND s.stance IN ('Very favorable', 'Favorable', 'Indifferent', 'Unfavorable', 'Very unfavorable', 'Unsure', 'NA')
         GROUP BY s.stance
         UNION ALL
         SELECT 'Total', COUNT(d.devID) as count
@@ -250,8 +250,14 @@ class AIQueries(ft.UserControl):
         # Calculate the total count for percentage calculation
         total_count = sum(row[1] for row in result if row[0] != 'Total')
 
+        # Define the desired order
+        desired_order = ['Very favorable', 'Favorable', 'Indifferent', 'Unfavorable', 'Very unfavorable', 'Unsure', 'NA', 'Total']
+
+        # Sort the result based on the desired order
+        sorted_result = sorted(result, key=lambda x: desired_order.index(x[0]))
+
         rows = []
-        for row in result:
+        for row in sorted_result:
             stance = row[0]
             count = row[1]
             percentage = (count / total_count) * 100 if total_count > 0 else 0
@@ -260,8 +266,8 @@ class AIQueries(ft.UserControl):
                 ft.DataCell(ft.Text(stance)),
                 ft.DataCell(
                     ft.Row([
-                        ft.Text(f"{count} ", color="blue"),
-                        ft.Text(f"({percentage:.1f}%)", color=ft.colors.ORANGE_200)
+                        ft.Text(f"{count} ", color="red"),
+                        ft.Text(f"({percentage:.1f}%)", color=ft.colors.LIGHT_GREEN_300)
                     ])
                 )
             ]
@@ -269,8 +275,6 @@ class AIQueries(ft.UserControl):
 
         self.tasks.controls = [self._build_table(cols, rows)]
         self.update()
-
-
 
 
 
@@ -300,8 +304,14 @@ class AIQueries(ft.UserControl):
         # Calculate the total count for percentage calculation
         total_count = sum(row[1] for row in result if row[0] != 'Total')
 
+        # Define the desired order
+        desired_order = ['Very favorable', 'Favorable', 'Indifferent', 'Unfavorable', 'Very unfavorable', 'Unsure', 'NA', 'Total']
+
+        # Sort the result based on the desired order
+        sorted_result = sorted(result, key=lambda x: desired_order.index(x[0]))
+
         rows = []
-        for row in result:
+        for row in sorted_result:
             stance = row[0]
             count = row[1]
             percentage = (count / total_count) * 100 if total_count > 0 else 0
@@ -319,7 +329,6 @@ class AIQueries(ft.UserControl):
 
         self.tasks.controls = [self._build_table(cols, rows)]
         self.update()
-
     def usa_dev_distrust_ai(self, e):
         cursor = self.connection.cursor()
         cols_text = ['stance', 'count']
@@ -346,8 +355,14 @@ class AIQueries(ft.UserControl):
         # Calculate the total count for percentage calculation
         total_count = sum(row[1] for row in result if row[0] != 'Total')
 
+        # Define the desired order
+        desired_order = ['Very favorable', 'Favorable', 'Indifferent', 'Unfavorable', 'Very unfavorable', 'Unsure', 'NA', 'Total']
+
+        # Sort the result based on the desired order
+        sorted_result = sorted(result, key=lambda x: desired_order.index(x[0]))
+
         rows = []
-        for row in result:
+        for row in sorted_result:
             stance = row[0]
             count = row[1]
             percentage = (count / total_count) * 100 if total_count > 0 else 0
@@ -365,4 +380,3 @@ class AIQueries(ft.UserControl):
 
         self.tasks.controls = [self._build_table(cols, rows)]
         self.update()
-
