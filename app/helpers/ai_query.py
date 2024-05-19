@@ -250,7 +250,7 @@ class AIQueries(ft.UserControl):
         SELECT d.industry, a.devID, a.projectPlanning, a.writingCode
         FROM AIDevWorkflowUse AS a
         JOIN Developer AS d ON a.devID = d.devID
-        JOIN Company AS c ON d.company = c.companyName
+        JOIN Industry AS c ON d.industry = c.industry
         """
 
         cursor.execute(query)
@@ -274,7 +274,8 @@ class AIQueries(ft.UserControl):
         FROM Developer AS d
         JOIN AIStance AS s ON d.devID = s.devID
         JOIN AIDevWorkflowUse AS w ON d.devID = w.devID
-        WHERE d.devType = 'Java Developer' AND w.commitingAndReviewingChange = 'Strongly'
+        JOIN Uses as u ON d.devId = u.devId
+        WHERE u.technologyName = 'Java' AND w.commitingAndReviewingChange = 'USING';
         """
 
         cursor.execute(query)
@@ -297,7 +298,7 @@ class AIQueries(ft.UserControl):
         SELECT d.devID, s.stance, d.isProfessional
         FROM Developer AS d
         JOIN AIStance AS s ON d.devID = s.devID
-        WHERE d.isProfessional = 'No' AND s.trustinAccuracyOfAITools = 'Strongly'
+        WHERE d.isProfessional = 'No' AND 
         """
 
         cursor.execute(query)
@@ -320,7 +321,7 @@ class AIQueries(ft.UserControl):
         SELECT d.countryName, d.devID, s.stance
         FROM Developer AS d
         JOIN AIStance AS s ON d.devID = s.devID
-        WHERE d.countryName = 'USA' AND s.trustinAccuracyOfAITools = 'Distrust'
+        WHERE d.countryName = 'United States of America' AND (s.trustinAccuracyOfAITools = 'Somewhat distrust' OR s.trustinAccuracyOfAITools = 'Highly distrust')
         """
 
         cursor.execute(query)
