@@ -198,11 +198,10 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
             if idx == end:
                 break
             id = row['ResponseId']
-            print(row['age'])
             # Developer          
             query = "INSERT INTO Developer VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             values = (id, 
-                      row['Country'] if row['MainBranch'] != 'NA' else None, 
+                      row['Country'] if row['Country'] != 'NA' else None, 
                       row['Industry'] if row['Industry'] != 'NA' else None, 
                       row['YearsCode'] if row['YearsCode'] != 'NA' else None, 
                       row['OrgSize'] if row['OrgSize'] != 'NA' else None, 
@@ -217,7 +216,11 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
                       row['RemoteWork'] if row['RemoteWork'] != 'NA' else None,
                       row['EdLevel'] if row['EdLevel'] != 'NA' else None,
                       row['ConvertedCompYearly'] if row['ConvertedCompYearly'] != 'NA' else None)
-            cursor.execute(query, values)
+            try:
+                cursor.execute(query, values)
+            except Exception as e:
+                print(values)
+                raise Exception
             
             # AIStance
             query = "INSERT INTO AIStance VALUES (%s, %s, %s)"
@@ -318,8 +321,8 @@ def main():
         database = 'DevAI'
     )
     print("Starting")
-    start = 2001
-    end = 10000
+    start = 7000
+    end =10000
     parse(myConnection, filepath, start, end)
     myConnection.close()
 
