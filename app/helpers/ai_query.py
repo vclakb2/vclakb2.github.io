@@ -148,13 +148,24 @@ class AIQueries(ft.UserControl):
 
             cursor.execute(query)
             result = cursor.fetchall()
-
+            attribute_display_names = {
+                'projectPlanning': 'Project Planning',
+                'learnAboutCodeBase': 'Learn About\nCode Base',
+                'documentingCode': 'Documenting\nCode',
+                'writingCode': 'Writing Code',
+                'debuggingAndGettingHelp': 'Debugging And\nGetting Help',
+                'testingCode': 'Testing Code',
+                'commitingAndReviewingChange': 'Commiting And\nReviewing Change',
+                'deploymentAndMonitoring': 'Deployment And\nMonitoring',
+                'collaboratingWithTeammates': 'Collaborating\nWith Teammates'
+            }
+            attribute_display_name = attribute_display_names[attribute]
             cols_text = [
                 'industry',
-                f'NOT USING (%)',
-                f'INTERESTED (%)',
-                f'USING (%)',
-                f'NULL (%)',
+                f'{attribute_display_name}\nNOT USING (%)',
+                f'{attribute_display_name}\nINTERESTED (%)',
+                f'{attribute_display_name}\nUSING (%)',
+                f'{attribute_display_name}\nNULL (%)',
             ]
             cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
@@ -178,25 +189,25 @@ class AIQueries(ft.UserControl):
                 ft.DataCell(
                     ft.Row([
                         ft.Text(f"{not_using} ", color="red"),
-                        ft.Text(f"({not_using_percent:.2f}%)", color=ft.colors.RED_100)
+                        ft.Text(f"({not_using_percent:.1f}%)", color=ft.colors.RED_200)
                     ])
                 ),
                 ft.DataCell(
                     ft.Row([
                         ft.Text(f"{interested} ", color="blue"),
-                        ft.Text(f"({interested_percent:.2f}%)", color=ft.colors.LIGHT_BLUE_300)
+                        ft.Text(f"({interested_percent:.1f}%)", color=ft.colors.LIGHT_BLUE_300)
                     ])
                 ),
                 ft.DataCell(
                     ft.Row([
                         ft.Text(f"{using} ", color="green"),
-                        ft.Text(f"({using_percent:.2f}%)", color=ft.colors.LIGHT_GREEN_300)
+                        ft.Text(f"({using_percent:.1f}%)", color=ft.colors.LIGHT_GREEN_300)
                     ])
                 ),
                 ft.DataCell(
                     ft.Row([
                         ft.Text(f"{null} ", color="grey"),
-                        ft.Text(f"({null_percent:.2f}%)", color=ft.colors.ORANGE_300)
+                        ft.Text(f"({null_percent:.1f}%)", color=ft.colors.ORANGE_300)
                     ])
                 )
             ]
