@@ -3,6 +3,7 @@ import csv
 
 
 filepath = "C:/Users/kamal/OneDrive/Documents/db/survey_results_public.csv"
+worldpath = "C:/Users/kamal/Downloads/world.csv"
 
 PLANNING = 'Project planning'
 TESTING = 'Testing code'
@@ -157,6 +158,21 @@ LIBS = [".NET (5+)",
         "Uno Platform",
         "Xamarin"]
 
+def world(connection: mysql.connector.connection_cext.CMySQLConnection, filepath, start, end):
+    with open(filepath, newline='', errors='ignore') as datafile:
+        cursor = connection.cursor()
+        reader = csv.DictReader(datafile)
+        count = 0
+        print("Reading")
+        for idx, row in enumerate(reader):
+            query = "INSERT INTO World VALUES (%s, %s, %s)"
+            values = (row['Country'], row['Population'], row['pop'])
+            
+            cursor.execute(query, values)
+        connection.commit()
+    cursor.close()
+    print(count)
+
 def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath, start, end):
     cursor = connection.cursor()
     # # EducationSource
@@ -225,6 +241,7 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
             # AIStance
             query = "INSERT INTO AIStance VALUES (%s, %s, %s)"
             values = (id, row['AISent'], row['AIBen'])
+
             cursor.execute(query, values)
 
             # AIDevWorkflowUse
@@ -256,6 +273,7 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
 
             query = "INSERT INTO AIDevWorkflowUse VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             values = (id, planning, learning, documenting, writing, debugging, testing, reviewing, deployment, collaborate)
+            
             cursor.execute(query, values)
 
             # AIWorkflowChangein1Year
@@ -289,6 +307,7 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
 
             query = "INSERT INTO AIWorkflowChangein1Year VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             values = (id, debugging, testing, deployment, reviewing, documenting, learning, planning, writing, collaborate)
+
             cursor.execute(query, values)
 
             # LearnsFrom
@@ -321,8 +340,8 @@ def main():
         database = 'DevAI'
     )
     print("Starting")
-    start = 7000
-    end =10000
+    start = 16000
+    end =20000
     parse(myConnection, filepath, start, end)
     myConnection.close()
 
