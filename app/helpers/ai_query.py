@@ -69,6 +69,21 @@ class AIQueries(ft.UserControl):
         return lv
     
 
+    def _build_table_static(self, cols, rows, attr):
+       return ft.Column(
+           controls= [
+                ft.Divider(thickness=1),
+                ft.Text(attr, size ="20"),
+                ft.DataTable(
+                    border=ft.border.all(2, "white"),
+                    border_radius=10,
+                    columns=cols,
+                    rows= rows
+                )
+           ]
+       )
+       
+
     # Helper method to build a table from a query output
     def _build_table(self, cols, rows):
         lv = ft.ListView(expand=0, spacing=20, padding=20, auto_scroll=False,  height=400)
@@ -136,10 +151,10 @@ class AIQueries(ft.UserControl):
 
             cols_text = [
                 'industry',
-                f'{attribute}\nNOT USING (%)',
-                f'{attribute}\nINTERESTED (%)',
-                f'{attribute}\nUSING (%)',
-                f'{attribute}\nNULL (%)',
+                f'NOT USING (%)',
+                f'INTERESTED (%)',
+                f'USING (%)',
+                f'NULL (%)',
             ]
             cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
@@ -187,7 +202,7 @@ class AIQueries(ft.UserControl):
             ]
                 rows.append(ft.DataRow(cells))
 
-            tables.append(self._build_table(cols, rows))
+            tables.append(self._build_table_static(cols, rows, attribute))
     
         self.tasks.controls = tables
         self.update()
