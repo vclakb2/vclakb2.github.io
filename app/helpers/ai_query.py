@@ -295,10 +295,10 @@ class AIQueries(ft.UserControl):
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         query = """
-        SELECT d.devID, s.stance, d.isProfessional
+        SELECT d.devID, s.stance, d.isDeveloper
         FROM Developer AS d
         JOIN AIStance AS s ON d.devID = s.devID
-        WHERE d.isProfessional = 'No' AND 
+        WHERE d.isDeveloper = True AND s.trustinAccuracyOfAITools = 'Highly trust'
         """
 
         cursor.execute(query)
