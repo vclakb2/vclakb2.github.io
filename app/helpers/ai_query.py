@@ -33,7 +33,7 @@ class AIQueries(ft.UserControl):
                             on_click=self.ai_use_diff_for_industries
                         ),
                         ft.FilledButton(
-                            "Java Developers using AI", 
+                            "Java Developers using AI to\n commit and Review changes", 
                             icon=ft.icons.INSIGHTS, 
                             style = ft.ButtonStyle(
                                 bgcolor = "Orange",
@@ -183,16 +183,27 @@ class AIQueries(ft.UserControl):
 
     def java_dev_using_ai(self, e):
         cursor = self.connection.cursor()
-        cols_text = ['devID', 'stance', 'commitAndReview']
+        cols_text = ['stance', 'count']
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         query = """
-        SELECT d.devID, s.stance, w.commitingAndReviewingChange
+        SELECT s.stance, COUNT(d.devID) as count
         FROM Developer AS d
         JOIN AIStance AS s ON d.devID = s.devID
         JOIN AIDevWorkflowUse AS w ON d.devID = w.devID
         JOIN Uses as u ON d.devId = u.devId
-        WHERE u.technologyName = 'Java' AND w.commitingAndReviewingChange = 'USING';
+        WHERE u.technologyName = 'Java'
+        AND w.commitingAndReviewingChange = 'USING'
+        AND s.stance IN ('Very favorable', 'Favorable', 'Indifferent', 'Unfavorable', 'Unsure', 'NA')
+        GROUP BY s.stance
+        UNION ALL
+        SELECT 'Total', COUNT(d.devID) as count
+        FROM Developer AS d
+        JOIN AIStance AS s ON d.devID = s.devID
+        JOIN AIDevWorkflowUse AS w ON d.devID = w.devID
+        JOIN Uses as u ON d.devId = u.devId
+        WHERE u.technologyName = 'Java'
+        AND w.commitingAndReviewingChange = 'USING';
         """
 
         cursor.execute(query)
@@ -200,11 +211,13 @@ class AIQueries(ft.UserControl):
 
         rows = []
         for i in result:
-            cells = [ft.DataCell(ft.Text(j)) for j in i]
+            cells = [ft.DataCell(ft.Text(str(j))) for j in i]
             rows.append(ft.DataRow(cells))
 
         self.tasks.controls = [self._build_table(cols, rows)]
         self.update()
+
+
 
     def non_prof_dev_trust_ai(self, e):
         cursor = self.connection.cursor()
