@@ -247,13 +247,30 @@ class AIQueries(ft.UserControl):
         cursor.execute(query)
         result = cursor.fetchall()
 
+        # Calculate the total count for percentage calculation
+        total_count = sum(row[1] for row in result if row[0] != 'Total')
+
         rows = []
-        for i in result:
-            cells = [ft.DataCell(ft.Text(str(j))) for j in i]
+        for row in result:
+            stance = row[0]
+            count = row[1]
+            percentage = (count / total_count) * 100 if total_count > 0 else 0
+
+            cells = [
+                ft.DataCell(ft.Text(stance)),
+                ft.DataCell(
+                    ft.Row([
+                        ft.Text(f"{count} ", color="blue"),
+                        ft.Text(f"({percentage:.1f}%)", color=ft.colors.ORANGE_200)
+                    ])
+                )
+            ]
             rows.append(ft.DataRow(cells))
 
         self.tasks.controls = [self._build_table(cols, rows)]
         self.update()
+
+
 
 
 
@@ -280,9 +297,24 @@ class AIQueries(ft.UserControl):
         cursor.execute(query)
         result = cursor.fetchall()
 
+        # Calculate the total count for percentage calculation
+        total_count = sum(row[1] for row in result if row[0] != 'Total')
+
         rows = []
-        for i in result:
-            cells = [ft.DataCell(ft.Text(str(j))) for j in i]
+        for row in result:
+            stance = row[0]
+            count = row[1]
+            percentage = (count / total_count) * 100 if total_count > 0 else 0
+
+            cells = [
+                ft.DataCell(ft.Text(stance)),
+                ft.DataCell(
+                    ft.Row([
+                        ft.Text(f"{count} ", color=ft.colors.PURPLE_400),
+                        ft.Text(f"({percentage:.1f}%)", color=ft.colors.LIME_300)
+                    ])
+                )
+            ]
             rows.append(ft.DataRow(cells))
 
         self.tasks.controls = [self._build_table(cols, rows)]
@@ -311,10 +343,26 @@ class AIQueries(ft.UserControl):
         cursor.execute(query)
         result = cursor.fetchall()
 
+        # Calculate the total count for percentage calculation
+        total_count = sum(row[1] for row in result if row[0] != 'Total')
+
         rows = []
-        for i in result:
-            cells = [ft.DataCell(ft.Text(str(j))) for j in i]
+        for row in result:
+            stance = row[0]
+            count = row[1]
+            percentage = (count / total_count) * 100 if total_count > 0 else 0
+
+            cells = [
+                ft.DataCell(ft.Text(stance)),
+                ft.DataCell(
+                    ft.Row([
+                        ft.Text(f"{count} ", color="red"),
+                        ft.Text(f"({percentage:.1f}%)", color=ft.colors.LIGHT_GREEN_300)
+                    ])
+                )
+            ]
             rows.append(ft.DataRow(cells))
 
         self.tasks.controls = [self._build_table(cols, rows)]
         self.update()
+

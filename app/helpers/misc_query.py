@@ -98,7 +98,7 @@ class MiscQueries(ft.UserControl):
             COUNT(educationLevel) DESC;
         """
 
-        if self.conditions != None:
+        if self.conditions is not None:
             query = f"""
             SELECT 
                 countryName,
@@ -110,7 +110,7 @@ class MiscQueries(ft.UserControl):
                 ROUND(COUNT(CASE WHEN educationLevel  = \'Master\\\'s degree (M.A., M.S., M.Eng., MBA, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Masters\',
                 ROUND(COUNT(CASE WHEN educationLevel  = \'Professional degree (JD, MD, Ph.D, Ed.D, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'PHD+\'
             FROM 
-            Developer
+                Developer
             GROUP BY 
                 countryName
             {self.conditions}
@@ -123,34 +123,23 @@ class MiscQueries(ft.UserControl):
         cursor.execute(query)
         result = cursor.fetchall()
 
-        # Format results into flet rows
+        # Format results into flet rows with colored text
         rows = []
-        for i in result:
-            cells = []
-            for j in i:
-                cells.append(ft.DataCell(ft.Text(j)))
+        for row in result:
+            cells = [
+                ft.DataCell(ft.Text(row[0])),  # Country
+                ft.DataCell(ft.Text(f"{row[1]:.2f}", color="red")),  # Primary
+                ft.DataCell(ft.Text(f"{row[2]:.2f}", color="blue")),  # Secondary
+                ft.DataCell(ft.Text(f"{row[3]:.2f}", color="green")),  # Some College
+                ft.DataCell(ft.Text(f"{row[4]:.2f}", color="purple")),  # Associates
+                ft.DataCell(ft.Text(f"{row[5]:.2f}", color="orange")),  # Bachelors
+                ft.DataCell(ft.Text(f"{row[6]:.2f}", color="cyan")),  # Masters
+                ft.DataCell(ft.Text(f"{row[7]:.2f}", color="magenta"))  # PHD+
+            ]
             rows.append(ft.DataRow(cells))
 
         # Adds table to page
         self.tasks.controls = [self._build_table(cols, rows)]
-
-        # Sets subquery to text field value
-        def select(e):
-            self.conditions = f"HAVING countryName = '{tb1.content.value}'"
-            self.country_edu(e)
-
-        # Creates a text input field
-        tb1 = ft.Container(
-            content = ft.TextField(label="Country"),
-            width = 200,
-        )
-
-        # Button that submits text field
-        b = ft.ElevatedButton(text="Submit", on_click=select)
-
-        # Adds button and text field to page
-        self.tasks.controls.append(tb1)
-        self.tasks.controls.append(b)
         self.update()
 
     def country_wage(self, e):
