@@ -33,7 +33,7 @@ class AIQueries(ft.UserControl):
                             on_click=self.ai_use_diff_for_industries
                         ),
                         ft.FilledButton(
-                            "Java Developers using AI to\n commit and Review changes", 
+                            "AI Stance of Java Developers who use AI to\n commit and Review changes", 
                             icon=ft.icons.INSIGHTS, 
                             style = ft.ButtonStyle(
                                 bgcolor = "Orange",
@@ -42,7 +42,7 @@ class AIQueries(ft.UserControl):
                             on_click=self.java_dev_using_ai
                         ),
                         ft.FilledButton(
-                            "Non-professional Developers trusting AI", 
+                            "AI Stance of \nNon-professional Developers who \n'Highly Trust' in AI accuracy", 
                             icon=ft.icons.INSIGHTS, 
                             style = ft.ButtonStyle(
                                 bgcolor = "Teal",
@@ -51,7 +51,7 @@ class AIQueries(ft.UserControl):
                             on_click=self.non_prof_dev_trust_ai
                         ),
                         ft.FilledButton(
-                            "USA Developers distrusting AI", 
+                            "AI stance of American\n Developers who distrust or \nHighly distrust accuracy of AI tools", 
                             icon=ft.icons.INSIGHTS, 
                             style = ft.ButtonStyle(
                                 bgcolor = "Brown",
@@ -136,14 +136,10 @@ class AIQueries(ft.UserControl):
 
             cols_text = [
                 'industry',
-                f'{attribute}\n_NOT_USING',
-                f'{attribute}\n_NOT_USING_%',
-                f'{attribute}\n_INTERESTED',
-                f'{attribute}\n_INTERESTED_%',
-                f'{attribute}\n_USING',
-                f'{attribute}\n_USING_%',
-                f'{attribute}\n_NULL',
-                f'{attribute}\n_NULL_%'
+                f'{attribute}\nNOT USING (%)',
+                f'{attribute}\nINTERESTED (%)',
+                f'{attribute}\nUSING (%)',
+                f'{attribute}\nNULL (%)',
             ]
             cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
@@ -163,16 +159,32 @@ class AIQueries(ft.UserControl):
                 null_percent = (null / total) * 100 if total > 0 else 0
 
                 cells = [
-                    ft.DataCell(ft.Text(industry)),
-                    ft.DataCell(ft.Text(f"{not_using}")),
-                    ft.DataCell(ft.Text(f"{not_using_percent:.2f}")),
-                    ft.DataCell(ft.Text(f"{interested}")),
-                    ft.DataCell(ft.Text(f"{interested_percent:.2f}")),
-                    ft.DataCell(ft.Text(f"{using}")),
-                    ft.DataCell(ft.Text(f"{using_percent:.2f}")),
-                    ft.DataCell(ft.Text(f"{null}")),
-                    ft.DataCell(ft.Text(f"{null_percent:.2f}")),
-                ]
+                ft.DataCell(ft.Text(industry)),
+                ft.DataCell(
+                    ft.Row([
+                        ft.Text(f"{not_using} ", color="red"),
+                        ft.Text(f"({not_using_percent:.2f}%)", color=ft.colors.RED_100)
+                    ])
+                ),
+                ft.DataCell(
+                    ft.Row([
+                        ft.Text(f"{interested} ", color="blue"),
+                        ft.Text(f"({interested_percent:.2f}%)", color=ft.colors.LIGHT_BLUE_300)
+                    ])
+                ),
+                ft.DataCell(
+                    ft.Row([
+                        ft.Text(f"{using} ", color="green"),
+                        ft.Text(f"({using_percent:.2f}%)", color=ft.colors.LIGHT_GREEN_300)
+                    ])
+                ),
+                ft.DataCell(
+                    ft.Row([
+                        ft.Text(f"{null} ", color="grey"),
+                        ft.Text(f"({null_percent:.2f}%)", color=ft.colors.ORANGE_300)
+                    ])
+                )
+            ]
                 rows.append(ft.DataRow(cells))
 
             tables.append(self._build_table(cols, rows))
@@ -221,14 +233,22 @@ class AIQueries(ft.UserControl):
 
     def non_prof_dev_trust_ai(self, e):
         cursor = self.connection.cursor()
-        cols_text = ['devID', 'stance', 'isProfessional']
+        cols_text = ['stance', 'count']
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         query = """
-        SELECT d.devID, s.stance, d.isDeveloper
+        SELECT s.stance, COUNT(d.devID) as count
         FROM Developer AS d
         JOIN AIStance AS s ON d.devID = s.devID
-        WHERE d.isDeveloper = True AND s.trustinAccuracyOfAITools = 'Highly trust'
+        WHERE d.isDeveloper = True 
+        AND s.trustinAccuracyOfAITools = 'Highly trust'
+        GROUP BY s.stance
+        UNION ALL
+        SELECT 'Total', COUNT(d.devID) as count
+        FROM Developer AS d
+        JOIN AIStance AS s ON d.devID = s.devID
+        WHERE d.isDeveloper = True 
+        AND s.trustinAccuracyOfAITools = 'Highly trust';
         """
 
         cursor.execute(query)
@@ -236,7 +256,7 @@ class AIQueries(ft.UserControl):
 
         rows = []
         for i in result:
-            cells = [ft.DataCell(ft.Text(j)) for j in i]
+            cells = [ft.DataCell(ft.Text(str(j))) for j in i]
             rows.append(ft.DataRow(cells))
 
         self.tasks.controls = [self._build_table(cols, rows)]
@@ -244,14 +264,22 @@ class AIQueries(ft.UserControl):
 
     def usa_dev_distrust_ai(self, e):
         cursor = self.connection.cursor()
-        cols_text = ['countryName', 'devID', 'stance']
+        cols_text = ['stance', 'count']
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         query = """
-        SELECT d.countryName, d.devID, s.stance
+        SELECT s.stance, COUNT(d.devID) as count
         FROM Developer AS d
         JOIN AIStance AS s ON d.devID = s.devID
-        WHERE d.countryName = 'United States of America' AND (s.trustinAccuracyOfAITools = 'Somewhat distrust' OR s.trustinAccuracyOfAITools = 'Highly distrust')
+        WHERE d.countryName = 'United States of America' 
+        AND (s.trustinAccuracyOfAITools = 'Somewhat distrust' OR s.trustinAccuracyOfAITools = 'Highly distrust')
+        GROUP BY s.stance
+        UNION ALL
+        SELECT 'Total', COUNT(d.devID) as count
+        FROM Developer AS d
+        JOIN AIStance AS s ON d.devID = s.devID
+        WHERE d.countryName = 'United States of America' 
+        AND (s.trustinAccuracyOfAITools = 'Somewhat distrust' OR s.trustinAccuracyOfAITools = 'Highly distrust');
         """
 
         cursor.execute(query)
@@ -259,7 +287,7 @@ class AIQueries(ft.UserControl):
 
         rows = []
         for i in result:
-            cells = [ft.DataCell(ft.Text(j)) for j in i]
+            cells = [ft.DataCell(ft.Text(str(j))) for j in i]
             rows.append(ft.DataRow(cells))
 
         self.tasks.controls = [self._build_table(cols, rows)]
