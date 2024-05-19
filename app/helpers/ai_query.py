@@ -24,34 +24,11 @@ class AIQueries(ft.UserControl):
                     # The on click must point to the correct function
                     controls=[
                         ft.FilledButton(
-                            "Get Developers", 
-                            icon=ft.icons.ADD, 
-                            style =  ft.ButtonStyle(
-                                bgcolor = "Red"
-                            ), 
-                            on_click=self.get_dev_country
-                        ),
-                        ft.FilledButton(
-                            "Get Countries", 
-                            icon=ft.icons.ADD, 
-                            style =  ft.ButtonStyle(
-                                bgcolor = "Blue"
-                            ), 
-                            on_click=self.get_countries
-                        ),
-                        ft.FilledButton(
-                            "Get Company", 
-                            icon=ft.icons.ADD, 
-                            style =  ft.ButtonStyle(
-                                bgcolor = "Green"
-                            ),
-                            on_click=self.get_comp
-                        ),
-                        ft.FilledButton(
                             "AI Use by Industry", 
                             icon=ft.icons.INSIGHTS, 
                             style = ft.ButtonStyle(
-                                bgcolor = "Purple"
+                                bgcolor = "Purple",
+                                color="White"
                             ),
                             on_click=self.ai_use_diff_for_industries
                         ),
@@ -59,7 +36,8 @@ class AIQueries(ft.UserControl):
                             "Java Developers using AI", 
                             icon=ft.icons.INSIGHTS, 
                             style = ft.ButtonStyle(
-                                bgcolor = "Orange"
+                                bgcolor = "Orange",
+                                color="White"
                             ),
                             on_click=self.java_dev_using_ai
                         ),
@@ -67,7 +45,8 @@ class AIQueries(ft.UserControl):
                             "Non-professional Developers trusting AI", 
                             icon=ft.icons.INSIGHTS, 
                             style = ft.ButtonStyle(
-                                bgcolor = "Teal"
+                                bgcolor = "Teal",
+                                color="White"
                             ),
                             on_click=self.non_prof_dev_trust_ai
                         ),
@@ -75,7 +54,8 @@ class AIQueries(ft.UserControl):
                             "USA Developers distrusting AI", 
                             icon=ft.icons.INSIGHTS, 
                             style = ft.ButtonStyle(
-                                bgcolor = "Brown"
+                                bgcolor = "Brown",
+                                color="White"
                             ),
                             on_click=self.usa_dev_distrust_ai
                         ),
@@ -90,7 +70,7 @@ class AIQueries(ft.UserControl):
 
     # Helper method to build a table from a query output
     def _build_table(self, cols, rows):
-        lv = ft.ListView(expand=0, spacing=10, padding=20, auto_scroll=False,  height=300)
+        lv = ft.ListView(expand=0, spacing=10, padding=20, auto_scroll=False,  height=400)
         lv.controls.append(ft.DataTable(
                 border=ft.border.all(2, "white"),
                 border_radius=10,
@@ -112,134 +92,6 @@ class AIQueries(ft.UserControl):
         else:
             self.conditions = None
         self.get_dev_country(e)
-
-
-    # Function representing a query tab output
-    def get_dev_country(self, e):
-        cursor = self.connection.cursor()
-        cols_text = ["devID", "countryName", "stance", "company"]        
-
-        query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Developer
-        """
-        
-        if self.conditions != None:
-            query += self.conditions
-
-        self.conditions = None
-
-        cursor.execute(query)
-        result = cursor.fetchall()
-
-        cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
-        rows = []
-        for i in result:
-            cells = [ft.DataCell(ft.Text(j)) for j in i]
-            rows.append(ft.DataRow(cells))
-        
-        self.tasks.controls = [self._build_table(cols, rows)]
-
-        butt = ft.CupertinoSegmentedButton(
-                selected_index=0 if e.data == '' else int(e.data),
-                selected_color=ft.colors.BLUE,
-                on_change=self.select_button_dev,
-                controls=[
-                    ft.Text("All"),
-                    ft.Container(
-                        padding=ft.padding.symmetric(0, 30),
-                        content=ft.Text("Country = testCountry"),
-                    ),
-                    ft.Container(
-                        padding=ft.padding.symmetric(0, 10),
-                        content=ft.Text("Country = bruh"),
-                    ),
-                ],
-            )
-
-        self.tasks.controls.append(butt)
-        self.update()
-
-    def get_countries(self, e):
-        cursor = self.connection.cursor()
-        cols_text = ['name', 'population', 'currency', 'status']
-        cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
-
-        query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Country
-        """
-
-        if self.conditions != None:
-            query += self.conditions
-
-        self.conditions = None
-
-        cursor.execute(query)
-        result = cursor.fetchall()
-
-        rows = []
-        for i in result:
-            cells = [ft.DataCell(ft.Text(j)) for j in i]
-            rows.append(ft.DataRow(cells))
-
-        self.tasks.controls = [self._build_table(cols, rows)]
-
-        def switch(e):
-            if e.data == 'true':
-                self.conditions = "ORDER BY population ASC"
-            else:
-                self.conditions = "ORDER BY population DESC"
-            self.get_countries(e)
-
-        s = ft.Switch(
-            label="Ordered: ASC",
-            value=True if e.data == '' or e.data == 'true' else False,
-            thumb_color={ft.MaterialState.SELECTED: ft.colors.BLUE},
-            track_color=ft.colors.YELLOW,
-            focus_color=ft.colors.PURPLE,
-            on_change=switch
-        )
-
-        self.tasks.controls.append(s)
-        self.update()
-
-    def get_comp(self, e):
-        cursor = self.connection.cursor()
-        cols_text = ['companyName', 'industry', 'marketShare']
-        cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
-
-        query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Company
-        """
-
-        if self.conditions != None:
-            query += self.conditions
-
-        self.conditions = None
-
-        cursor.execute(query)
-        result = cursor.fetchall()
-
-        rows = []
-        for i in result:
-            cells = [ft.DataCell(ft.Text(j)) for j in i]
-            rows.append(ft.DataRow(cells))
-
-        self.tasks.controls = [self._build_table(cols, rows)]
-
-        def select(e):
-            self.conditions = f"WHERE companyName = '{tb1.content.value}'"
-            self.get_comp(e)
-
-        tb1 = ft.Container(
-            content=ft.TextField(label="Company Name"),
-            width=200,
-        )
-
-        b = ft.ElevatedButton(text="Submit", on_click=select)
-
-        self.tasks.controls.append(tb1)
-        self.tasks.controls.append(b)
-        self.update()
 
     # New queries added below
 

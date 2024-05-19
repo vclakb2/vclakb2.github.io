@@ -12,10 +12,9 @@ class DevQueries(ft.UserControl):
 
     def build(self):
         self.tasks = ft.Column(width=1200,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER)
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        image_path = os.path.join(base_dir, 'resources', 'dallesoftwaredev.jpg')
-        
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        base_dir = os.path.dirname(os.path.abspath(__file__))        
         return ft.Column(
             width=1200,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -26,30 +25,33 @@ class DevQueries(ft.UserControl):
                     # Define the tabs for queries here
                     # The on click must point to the correct function
                     controls=[
-                        
+
                         ft.FilledButton(
-                            "Get Developers", 
-                            icon=ft.icons.ADD, 
+                            "Dev Years of Experience by Technology", 
+                            icon=ft.icons.PERSON_3, 
                             style =  ft.ButtonStyle(
-                                bgcolor = "Red"
+                                bgcolor = ft.colors.BLUE_700,
+                                color='White'
                             ), 
-                            on_click=self.get_dev_country
+                            on_click=self.get_yoe
                         ),
                         ft.FilledButton(
-                            "Get Countries", 
-                            icon=ft.icons.ADD, 
+                            "Popular Developer Technologies", 
+                            icon=ft.icons.PERSON_3, 
                             style =  ft.ButtonStyle(
-                                bgcolor = "Blue"
+                                bgcolor = ft.colors.YELLOW_900,
+                                color='White'
                             ), 
-                            on_click=self.get_countries
+                            on_click=self.get_tech
                         ),
                         ft.FilledButton(
-                            "Get Company", 
-                            icon=ft.icons.ADD, 
+                            "Popular Developer Industries", 
+                            icon=ft.icons.PERSON_3, 
                             style =  ft.ButtonStyle(
-                                bgcolor = "Green"
+                                bgcolor = "Red",
+                                color='White'
                             ),
-                            on_click=self.get_comp
+                            on_click=self.get_ind
                         ),
                     ],
                 ),
@@ -61,8 +63,8 @@ class DevQueries(ft.UserControl):
     
 
     # Heler method to build a table from a query output
-    def _build_table(self, cols, rows):
-        lv = ft.ListView(expand=0, spacing=10, padding=20, auto_scroll=False,  height=300)
+    def _build_table(self, cols, rows, height = 300):
+        lv = ft.ListView(expand=0, spacing=10, padding=20, auto_scroll=False,  height=height)
         lv.controls.append(ft.DataTable(
                 border=ft.border.all(2, "white"),
                 border_radius=10,
@@ -92,19 +94,30 @@ class DevQueries(ft.UserControl):
 
 
     # Function representing a query tab output
-    def get_dev_country(self, e):
+    def get_yoe(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ["devID", "countryName", "stance", "company"]        
+        cols_text = ["Tech", "Years in Industry"]        
 
         # Query based on column names defined
         query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Developer
+        SELECT t.technologyName , ROUND(AVG(d.devExperience), 2) AS Experience FROM Technology as t
+        JOIN Uses as u on t.technologyName = u.technologyName
+        JOIN Developer as d on d.devID = u.devID
+        GROUP BY t.technologyName
+        ORDER BY Experience DESC
         """
         
         # If a condition exists then add it to the query
         if self.conditions != None:
-            query += self.conditions
+            query = f"""
+            SELECT t.technologyName , ROUND(AVG(d.devExperience), 2) AS Experience FROM Technology as t
+            JOIN Uses as u on t.technologyName = u.technologyName
+            JOIN Developer as d on d.devID = u.devID
+            {self.conditions}
+            GROUP BY t.technologyName
+            ORDER BY Experience DESC
+            """
 
         # Reset a condition after querying
         self.conditions = None
@@ -125,44 +138,51 @@ class DevQueries(ft.UserControl):
             rows.append(ft.DataRow(cells))
         
         # Add table output to page
-        self.tasks.controls = [self._build_table(cols, rows)]
+        self.tasks.controls = [self._build_table(cols, rows, 400)]
 
         # Create subquery button
-        butt = ft.CupertinoSegmentedButton(
-                selected_index=0 if e.data == '' else int(e.data),
-                selected_color=ft.colors.BLUE,
-                on_change=self.select_button_dev,
-                controls=[
-                    ft.Text("All"),
-                    ft.Container(
-                        padding=ft.padding.symmetric(0, 30),
-                        content=ft.Text("Country = testCountry"),
-                    ),
-                    ft.Container(
-                        padding=ft.padding.symmetric(0, 10),
-                        content=ft.Text("Country = bruh"),
-                    ),
-                ],
-            )
+        def select(e):
+            self.conditions = f"WHERE t.technologyName = '{tb1.content.value}'"
+            self.get_yoe(e)
 
-        # Add subquery button to page
-        self.tasks.controls.append(butt)
+        # Creates a text input field
+        tb1 = ft.Container(
+            content = ft.TextField(label="Technology"),
+            width = 200,
+        )
+
+        # Button that submits text field
+        b = ft.ElevatedButton(text="Submit", on_click=select)
+
+        # Adds button and text field to page
+        self.tasks.controls.append(tb1)
+        self.tasks.controls.append(b)
         self.update()
 
-    def get_countries(self, e):
+    def get_tech(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ['name', 'population', 'currency', 'status']
+        cols_text = ['Tech', 'Number of Users']
         # Format columns to flet datatype
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
         query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Country
+        SELECT t.technologyName , COUNT(*) AS cnt FROM Technology as t
+        JOIN Uses as u on t.technologyName = u.technologyName
+        JOIN Developer as d on d.devID = u.devID
+        GROUP BY t.technologyName
+        ORDER BY cnt DESC
         """
 
         if self.conditions != None:
-            query += self.conditions
+            query = f"""
+            SELECT t.technologyName , COUNT(*) AS cnt FROM Technology as t
+            JOIN Uses as u on t.technologyName = u.technologyName
+            JOIN Developer as d on d.devID = u.devID
+            GROUP BY t.technologyName
+            {self.conditions}
+            """
 
         self.conditions = None
 
@@ -178,17 +198,17 @@ class DevQueries(ft.UserControl):
             rows.append(ft.DataRow(cells))
 
         # Add table to output
-        self.tasks.controls = [self._build_table(cols, rows)]
+        self.tasks.controls = [self._build_table(cols, rows, 400)]
 
 
         # Switch function that called when the switch is changed
         def switch(e):
             if e.data == 'true':
                 e.data = True
-                self.conditions = "ORDER BY population ASC"
+                self.conditions = "ORDER BY cnt DESC"
             else:
                 e.data = False
-                self.conditions = "ORDER BY population DESC"
+                self.conditions = "ORDER BY cnt ASC"
             self.get_countries(e)
 
 
@@ -207,16 +227,19 @@ class DevQueries(ft.UserControl):
         self.update()
 
 
-    def get_comp(self, e):
+    def get_ind(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ['companyName', 'industry', 'marketShare']
+        cols_text = ['Industry', "Count"]
         # Format columns to flet datatype
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
         query = f"""
-        SELECT {', '.join(item for item in cols_text)} FROM Company
+        SELECT i.industry, COUNT(*) FROM Industry as i
+        JOIN Developer as d on d.industry = i.industry
+        GROUP BY i.industry
+        ORDER BY COUNT(*) DESC
         """
 
         if self.conditions != None:
@@ -236,23 +259,5 @@ class DevQueries(ft.UserControl):
             rows.append(ft.DataRow(cells))
 
         # Adds table to page
-        self.tasks.controls = [self._build_table(cols, rows)]
-
-        # Sets subquery to text field value
-        def select(e):
-            self.conditions = f"WHERE companyName = '{tb1.content.value}'"
-            self.get_comp(e)
-
-        # Creates a text input field
-        tb1 = ft.Container(
-            content = ft.TextField(label="Company Name"),
-            width = 200,
-        )
-
-        # Button that submits text field
-        b = ft.ElevatedButton(text="Submit", on_click=select)
-
-        # Adds button and text field to page
-        self.tasks.controls.append(tb1)
-        self.tasks.controls.append(b)
+        self.tasks.controls = [self._build_table(cols, rows, 500)]
         self.update()

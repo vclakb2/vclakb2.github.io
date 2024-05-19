@@ -31,15 +31,15 @@ class Navbar(ft.UserControl):
                 ),
                 ft.Divider(thickness=2),
                 ft.NavigationDrawerDestination(
-                    icon_content=ft.Icon(ft.icons.PHONE_OUTLINED),
+                    icon_content=ft.Icon(ft.icons.INSIGHTS_SHARP),
                     label="AI Insights",
-                    selected_icon=ft.icons.PHONE,
+                    selected_icon=ft.icons.INSIGHTS_SHARP,
                 ),
                 ft.Divider(thickness=2),
                 ft.NavigationDrawerDestination(
-                    icon_content=ft.Icon(ft.icons.PHONE_OUTLINED),
+                    icon_content=ft.Icon(ft.icons.DATA_THRESHOLDING_OUTLINED),
                     label="Misc Insights",
-                    selected_icon=ft.icons.PHONE,
+                    selected_icon=ft.icons.DATA_THRESHOLDING_SHARP,
                 ),
             ],
         )
