@@ -14,7 +14,7 @@ def main(page: ft.Page):
     page.title = "DevAI"
     page.scroll = 'auto'
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.window_width = 1200      
+    page.window_width = 1300      
     page.window_height = 800       
     page.window_resizable = True 
     page.theme = ft.theme.Theme(

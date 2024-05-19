@@ -84,12 +84,12 @@ class MiscQueries(ft.UserControl):
         SELECT 
             countryName,
             ROUND(COUNT(CASE WHEN educationLevel = \'Primary/Elementary School\' THEN 1 END)/COUNT(*), 2) AS Elementary,
-            ROUND(COUNT(CASE WHEN educationLevel  = \'Secondary/High School\' THEN 1 END)/COUNT(*), 2) AS \'High School\',
-            ROUND(COUNT(CASE WHEN educationLevel  = \'Some college/university study without earning a degree\' THEN 1 END) / COUNT(*), 2) AS \'Some College/No degree\',
-            ROUND(COUNT(CASE WHEN educationLevel  = \'Associate degree (A.A., A.S., etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Associates\',
-            ROUND(COUNT(CASE WHEN educationLevel  = \'Bachelor\\\'s degree (B.A., B.S., B.Eng., etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Bachelors\',
-            ROUND(COUNT(CASE WHEN educationLevel  = \'Master\\\'s degree (M.A., M.S., M.Eng., MBA, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Masters\',
-            ROUND(COUNT(CASE WHEN educationLevel  = \'Professional degree (JD, MD, Ph.D, Ed.D, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'PHD+\'
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Secondary/High School\' THEN 1 END)/COUNT(*)* 100, 2) AS \'High School\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Some college/university study without earning a degree\' THEN 1 END) / COUNT(*)* 100, 2) AS \'Some College/No degree\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Associate degree (A.A., A.S., etc.)\' THEN 1 END) / COUNT(*)* 100, 2) AS \'Associates\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Bachelor\\\'s degree (B.A., B.S., B.Eng., etc.)\' THEN 1 END) / COUNT(*)* 100, 2) AS \'Bachelors\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Master\\\'s degree (M.A., M.S., M.Eng., MBA, etc.)\' THEN 1 END) / COUNT(*)* 100, 2) AS \'Masters\',
+            ROUND(COUNT(CASE WHEN educationLevel  = \'Professional degree (JD, MD, Ph.D, Ed.D, etc.)\' THEN 1 END) / COUNT(*)* 100, 2) AS \'PHD+\'
         FROM 
             Developer
         GROUP BY 
@@ -102,13 +102,13 @@ class MiscQueries(ft.UserControl):
             query = f"""
             SELECT 
                 countryName,
-                ROUND(COUNT(CASE WHEN educationLevel = \'Primary/Elementary School\' THEN 1 END)/COUNT(*), 2) AS Elementary,
-                ROUND(COUNT(CASE WHEN educationLevel  = \'Secondary/High School\' THEN 1 END)/COUNT(*), 2) AS \'High School\',
-                ROUND(COUNT(CASE WHEN educationLevel  = \'Some college/university study without earning a degree\' THEN 1 END) / COUNT(*), 2) AS \'Some College/No degree\',
-                ROUND(COUNT(CASE WHEN educationLevel  = \'Associate degree (A.A., A.S., etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Associates\',
-                ROUND(COUNT(CASE WHEN educationLevel  = \'Bachelor\\\'s degree (B.A., B.S., B.Eng., etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Bachelors\',
-                ROUND(COUNT(CASE WHEN educationLevel  = \'Master\\\'s degree (M.A., M.S., M.Eng., MBA, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'Masters\',
-                ROUND(COUNT(CASE WHEN educationLevel  = \'Professional degree (JD, MD, Ph.D, Ed.D, etc.)\' THEN 1 END) / COUNT(*), 2) AS \'PHD+\'
+                ROUND(COUNT(CASE WHEN educationLevel = \'Primary/Elementary School\' THEN 1 END)/COUNT(*) * 100, 2) AS Elementary,
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Secondary/High School\' THEN 1 END)/COUNT(*)* 100, 2) AS \'High School\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Some college/university study without earning a degree\' THEN 1 END) / COUNT(*)* 100, 2) AS \'Some College/No degree\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Associate degree (A.A., A.S., etc.)\' THEN 1 END) / COUNT(*)* 100, 2) AS \'Associates\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Bachelor\\\'s degree (B.A., B.S., B.Eng., etc.)\' THEN 1 END) / COUNT(*)* 100, 2) AS \'Bachelors\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Master\\\'s degree (M.A., M.S., M.Eng., MBA, etc.)\' THEN 1 END) / COUNT(*)* 100, 2) AS \'Masters\',
+                ROUND(COUNT(CASE WHEN educationLevel  = \'Professional degree (JD, MD, Ph.D, Ed.D, etc.)\' THEN 1 END) / COUNT(*)* 100, 2) AS \'PHD+\'
             FROM 
                 Developer
             GROUP BY 

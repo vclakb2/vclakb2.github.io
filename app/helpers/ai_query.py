@@ -224,6 +224,7 @@ class AIQueries(ft.UserControl):
         cols_text = ['stance', 'count']
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
+        text = "Java dev Stance on AI"
         query = """
         SELECT s.stance, COUNT(d.devID) as count
         FROM Developer AS d
@@ -241,8 +242,32 @@ class AIQueries(ft.UserControl):
         JOIN AIDevWorkflowUse AS w ON d.devID = w.devID
         JOIN Uses as u ON d.devId = u.devId
         WHERE u.technologyName = 'Java'
-        AND w.commitingAndReviewingChange = 'USING';
+        AND w.commitingAndReviewingChange = 'USING'
         """
+
+        if self.conditions != None:
+            text = f"{self.conditions} dev Stance on AI"
+            query = f"""
+            SELECT s.stance, COUNT(d.devID) as count
+            FROM Developer AS d
+            JOIN AIStance AS s ON d.devID = s.devID
+            JOIN AIDevWorkflowUse AS w ON d.devID = w.devID
+            JOIN Uses as u ON d.devId = u.devId
+            WHERE u.technologyName = {self.conditions}
+            AND w.commitingAndReviewingChange = 'USING'
+            AND s.stance IN ('Very favorable', 'Favorable', 'Indifferent', 'Unfavorable', 'Unsure', 'NA')
+            GROUP BY s.stance
+            UNION ALL
+            SELECT 'Total', COUNT(d.devID) as count
+            FROM Developer AS d
+            JOIN AIStance AS s ON d.devID = s.devID
+            JOIN AIDevWorkflowUse AS w ON d.devID = w.devID
+            JOIN Uses as u ON d.devId = u.devId
+            WHERE u.technologyName = {self.conditions}
+            AND w.commitingAndReviewingChange = 'USING'
+            """
+
+        self.conditions = None
 
         cursor.execute(query)
         result = cursor.fetchall()
@@ -273,7 +298,25 @@ class AIQueries(ft.UserControl):
             ]
             rows.append(ft.DataRow(cells))
 
-        self.tasks.controls = [self._build_table(cols, rows)]
+
+        label = ft.Text(text, size=20)
+        self.tasks.controls = [label, self._build_table(cols, rows)]
+        def select(e):
+            self.conditions = f"'{tb1.content.value}'"
+            self.java_dev_using_ai(e)
+
+        # Creates a text input field
+        tb1 = ft.Container(
+            content = ft.TextField(label="Choose Technology"),
+            width = 200,
+        )
+
+        # Button that submits text field
+        b = ft.ElevatedButton(text="Submit", on_click=select)
+
+        # Adds button and text field to page
+        self.tasks.controls.append(tb1)
+        self.tasks.controls.append(b)
         self.update()
 
 
@@ -334,6 +377,7 @@ class AIQueries(ft.UserControl):
         cols_text = ['stance', 'count']
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
+        text = "United States Stance on AI"
         query = """
         SELECT s.stance, COUNT(d.devID) as count
         FROM Developer AS d
@@ -348,6 +392,24 @@ class AIQueries(ft.UserControl):
         WHERE d.countryName = 'United States of America' 
         AND (s.trustinAccuracyOfAITools = 'Somewhat distrust' OR s.trustinAccuracyOfAITools = 'Highly distrust');
         """
+
+        if self.conditions != None:
+            text = f"{self.conditions} Stance on AI"
+            query = f"""
+                SELECT s.stance, COUNT(d.devID) as count
+                FROM Developer AS d
+                JOIN AIStance AS s ON d.devID = s.devID
+                WHERE d.countryName = {self.conditions}
+                AND (s.trustinAccuracyOfAITools = 'Somewhat distrust' OR s.trustinAccuracyOfAITools = 'Highly distrust')
+                GROUP BY s.stance
+                UNION ALL
+                SELECT 'Total', COUNT(d.devID) as count
+                FROM Developer AS d
+                JOIN AIStance AS s ON d.devID = s.devID
+                WHERE d.countryName = {self.conditions}
+                AND (s.trustinAccuracyOfAITools = 'Somewhat distrust' OR s.trustinAccuracyOfAITools = 'Highly distrust');
+            """
+
 
         cursor.execute(query)
         result = cursor.fetchall()
@@ -378,5 +440,27 @@ class AIQueries(ft.UserControl):
             ]
             rows.append(ft.DataRow(cells))
 
-        self.tasks.controls = [self._build_table(cols, rows)]
+        label = ft.Text(text, size=20)
+        self.tasks.controls = [label, self._build_table(cols, rows)]
+        def dropdown_changed(e):
+            t.value = f"Dropdown changed to {dd.value}"
+            self.conditions = f"'{dd.value}'"
+            self.usa_dev_distrust_ai(e)
+
+        t = ft.Text("Pick Country to see")
+        cursor.execute("""SELECT DISTINCT name FROM Country""")
+        countrys = cursor.fetchall()
+        options = [ft.dropdown.Option(i[0]) for i in countrys]
+        #print(options)
+        dd = ft.Dropdown(
+            on_change=dropdown_changed,
+            options= options,
+            width=100,
+            value = self.conditions if self.conditions else None
+        )
+        self.conditions = None
+
+        # Adds button and text field to page
+        self.tasks.controls.append(t)
+        self.tasks.controls.append(dd)
         self.update()
