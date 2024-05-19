@@ -2,7 +2,7 @@ import mysql.connector
 import csv
 
 
-filepath = "survey_results_public.csv"
+filepath = "C:/Users/kamal/OneDrive/Documents/db/survey_results_public.csv"
 
 PLANNING = 'Project planning'
 TESTING = 'Testing code'
@@ -157,7 +157,7 @@ LIBS = [".NET (5+)",
         "Uno Platform",
         "Xamarin"]
 
-def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath):
+def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath, start, end):
     cursor = connection.cursor()
     # # EducationSource
     # for entry in ONLINE:
@@ -190,12 +190,15 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
     with open(filepath, newline='', errors='ignore') as datafile:
         reader = csv.DictReader(datafile)
         count = 0
-        for row in reader:
-            if count == 2000:
+        print("Reading")
+        for idx, row in enumerate(reader):
+            print(idx)
+            if idx <  start:
+                continue
+            if idx == end:
                 break
-            count += 1
             id = row['ResponseId']
-
+            print(row['age'])
             # Developer          
             query = "INSERT INTO Developer VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             values = (id, 
@@ -300,10 +303,10 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
                     query = "INSERT INTO Uses VALUES (%s, %s)"
                     values = (id, source)
                     cursor.execute(query, values)
-            print(count)
-        
+
         connection.commit()
     cursor.close()
+    print(count)
 
 
 
@@ -314,7 +317,10 @@ def main():
         port = 13447,
         database = 'DevAI'
     )
-    parse(myConnection, filepath)
+    print("Starting")
+    start = 2001
+    end = 10000
+    parse(myConnection, filepath, start, end)
     myConnection.close()
 
 if __name__ == "__main__":
