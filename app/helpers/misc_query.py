@@ -75,7 +75,7 @@ class MiscQueries(ft.UserControl):
     def country_edu(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ['Country', '%Elementary', '%High', '%Some Col.', '%Assoc.', '%Bachelors', '%Masters', '%PHD+']
+        cols_text = ['Country', '%Primary', '%Secondary', '%Some Col.', '%Assoc.', '%Bach.', '%Mast.', '%PHD+']
         # Format columns to flet datatype
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
@@ -156,25 +156,27 @@ class MiscQueries(ft.UserControl):
     def country_wage(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ['Country', 'Average Salary', 'Currency']
+        cols_text = ['Country', 'Average Salary in USD']
         # Format columns to flet datatype
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
         query = f"""
         SELECT
-            countryName, ROUND(AVG(compensation),2) as  a, Country.currency  From Developer
+            Country.name, ROUND(AVG(Developer.compensation),2) as  a  From Developer
             JOIN Country on Country.name = Developer.countryName
-        GROUP BY countryName
-        ORDER BY a ASC
+        GROUP BY Country.name
+        HAVING COUNT(*) > 9
+        ORDER BY a DESC
         """
 
         if self.conditions != None:
             query = f"""
                 SELECT
-                countryName, ROUND(AVG(compensation),2) as  a, Country.currency  From Developer
-                JOIN Country on Country.name = Developer.countryName
-            GROUP BY countryName
+                    Country.name, ROUND(AVG(Developer.compensation),2) as  a  From Developer
+                    JOIN Country on Country.name = Developer.countryName
+                GROUP BY Country.name
+                HAVING COUNT(*) > 9
             {self.conditions}
             """
 
@@ -199,16 +201,16 @@ class MiscQueries(ft.UserControl):
         def switch(e):
             if e.data == 'true':
                 e.data = True
-                self.conditions = "ORDER BY a ASC"
+                self.conditions = "ORDER BY a DESC"
             else:
                 e.data = False
-                self.conditions = "ORDER BY a DESC"
+                self.conditions = "ORDER BY a ASC"
             self.country_wage(e)
 
 
         # Switch object for our subquery
         s = ft.Switch(
-            label="Ordered: ASC",
+            label="Ordered: Descending",
             value=True if e.data == '' or e.data == True else False,
             thumb_color={ft.MaterialState.SELECTED: ft.colors.BLUE},
             track_color=ft.colors.YELLOW,
@@ -224,7 +226,7 @@ class MiscQueries(ft.UserControl):
     def tech_wage(self, e):
         cursor = self.connection.cursor()
         # Define columns to retrieve 
-        cols_text = ['Tech Name', 'Salary']
+        cols_text = ['Tech Name', 'AVG Salary USD']
         # Format columns to flet datatype
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
@@ -234,6 +236,7 @@ class MiscQueries(ft.UserControl):
         JOIN Uses as u on t.technologyName = u.technologyName
         JOIN Developer as d on d.devID = u.devID
         GROUP BY t.technologyName
+        HAVING count(*) > 5
         ORDER by Salary DESC;
         """
 
