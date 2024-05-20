@@ -80,6 +80,7 @@ class MiscQueries(ft.UserControl):
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
+        text = "Education by Country"
         query = f"""
         SELECT 
             countryName,
@@ -99,6 +100,7 @@ class MiscQueries(ft.UserControl):
         """
 
         if self.conditions is not None:
+            text = "Education for " + self.conditions[len("HAVING countryName = "):]
             query = f"""
             SELECT 
                 countryName,
@@ -117,6 +119,7 @@ class MiscQueries(ft.UserControl):
             ORDER BY 
                 countryName
             """
+            print(query)
 
         self.conditions = None
 
@@ -139,7 +142,29 @@ class MiscQueries(ft.UserControl):
             rows.append(ft.DataRow(cells))
 
         # Adds table to page
-        self.tasks.controls = [self._build_table(cols, rows)]
+        label = ft.Text(text, size=20)
+        self.tasks.controls = [label, self._build_table(cols, rows)]
+
+        def dropdown_changed(e):
+            self.conditions = f"HAVING countryName = '{dd.value}'"
+            self.country_edu(e)
+
+        t = ft.Text("Pick Country to see")
+        cursor.execute("""SELECT DISTINCT name FROM Country ORDER BY name ASC""")
+        countrys = cursor.fetchall()
+        options = [ft.dropdown.Option(i[0]) for i in countrys]
+        #print(options)
+        dd = ft.Dropdown(
+            on_change=dropdown_changed,
+            options= options,
+            width=100,
+            value = self.conditions if self.conditions else None
+        )
+        self.conditions = None
+
+        # Adds button and text field to page
+        self.tasks.controls.append(t)
+        self.tasks.controls.append(dd)
         self.update()
 
     def country_wage(self, e):
@@ -150,6 +175,7 @@ class MiscQueries(ft.UserControl):
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
+        text = "AVG Salary by Country in USD"
         query = f"""
         SELECT
             Country.name, ROUND(AVG(Developer.compensation),2) as  a  From Developer
@@ -183,7 +209,8 @@ class MiscQueries(ft.UserControl):
             rows.append(ft.DataRow(cells))
 
         # Add table to output
-        self.tasks.controls = [self._build_table(cols, rows)]
+        label = ft.Text(text, size=20)
+        self.tasks.controls = [label, self._build_table(cols, rows)]
 
 
         # Switch function that called when the switch is changed
@@ -220,6 +247,7 @@ class MiscQueries(ft.UserControl):
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
+        text = "AVG Salary by technology"
         query = f"""
         Select t.technologyName, ROUND(AVG(d.compensation),2) as Salary From Technology as t
         JOIN Uses as u on t.technologyName = u.technologyName
@@ -230,6 +258,8 @@ class MiscQueries(ft.UserControl):
         """
 
         if self.conditions != None:
+            sub = self.conditions[len("where t.technologynsme = "):]
+            text = f"Average salary for {sub}"
             query = f"""
             Select t.technologyName, ROUND(AVG(d.compensation),2) as Salary From Technology as t
             JOIN Uses as u on t.technologyName = u.technologyName
@@ -252,7 +282,8 @@ class MiscQueries(ft.UserControl):
             rows.append(ft.DataRow(cells))
 
         # Adds table to page
-        self.tasks.controls = [self._build_table(cols, rows)]
+        label = ft.Text(text, size=20)
+        self.tasks.controls = [label, self._build_table(cols, rows)]
 
         # Sets subquery to text field value
         def select(e):

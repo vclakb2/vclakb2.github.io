@@ -78,20 +78,6 @@ class DevQueries(ft.UserControl):
     # In this case e.data represents the button index
     # We alter the conditon when we want to provide a subquery
     # Note a condition can also be a order by or group by if necessary
-    def select_button_dev(self, e):
-        ind = e.data
-        if ind == "0":
-            self.conditions = None
-        elif ind == "1":
-            self.conditions = "WHERE countryName = 'testCountry'"
-        elif ind == "2":
-            print("changing")
-            self.conditions = "WHERE countryName = 'bruh'"
-        else:
-            self.conditions = None
-        print(self.conditions)
-        self.get_dev_country(e)
-
 
     # Function representing a query tab output
     def get_yoe(self, e):
@@ -99,6 +85,7 @@ class DevQueries(ft.UserControl):
         # Define columns to retrieve 
         cols_text = ["Tech", "Years in Industry"]        
 
+        text = "Years in Industry for Technology"
         # Query based on column names defined
         query = f"""
         SELECT t.technologyName , ROUND(AVG(d.devExperience), 2) AS Experience FROM Technology as t
@@ -110,6 +97,7 @@ class DevQueries(ft.UserControl):
         
         # If a condition exists then add it to the query
         if self.conditions != None:
+            label = ft.Text(self.conditions[len("WHERE t.technologyName ="):], size=20)
             query = f"""
             SELECT t.technologyName , ROUND(AVG(d.devExperience), 2) AS Experience FROM Technology as t
             JOIN Uses as u on t.technologyName = u.technologyName
@@ -138,7 +126,8 @@ class DevQueries(ft.UserControl):
             rows.append(ft.DataRow(cells))
         
         # Add table output to page
-        self.tasks.controls = [self._build_table(cols, rows, 400)]
+        label = ft.Text(text, size=20)
+        self.tasks.controls = [label, self._build_table(cols, rows, 400)]
 
         # Create subquery button
         def select(e):
@@ -167,6 +156,7 @@ class DevQueries(ft.UserControl):
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
         # Query based on column names defined
+        text = "Number of users per tech"
         query = f"""
         SELECT t.technologyName , COUNT(*) AS cnt FROM Technology as t
         JOIN Uses as u on t.technologyName = u.technologyName
@@ -198,7 +188,8 @@ class DevQueries(ft.UserControl):
             rows.append(ft.DataRow(cells))
 
         # Add table to output
-        self.tasks.controls = [self._build_table(cols, rows, 400)]
+        label = ft.Text(text, size=20)
+        self.tasks.controls = [label, self._build_table(cols, rows, 400)]
 
 
         # Switch function that called when the switch is changed
@@ -209,12 +200,12 @@ class DevQueries(ft.UserControl):
             else:
                 e.data = False
                 self.conditions = "ORDER BY cnt ASC"
-            self.get_countries(e)
+            self.get_tech(e)
 
 
         # Switch object for our subquery
         s = ft.Switch(
-            label="Ordered: ASC",
+            label="Ordered: Descending",
             value=True if e.data == '' or e.data == True else False,
             thumb_color={ft.MaterialState.SELECTED: ft.colors.BLUE},
             track_color=ft.colors.YELLOW,

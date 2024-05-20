@@ -12,8 +12,7 @@ class AIQueries(ft.UserControl):
     def build(self):
         self.tasks = ft.Column(width=1200,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER)
-        lv = ft.ListView(expand=0, spacing=20, padding=20, auto_scroll=False,  height=600)
-        lv.controls.append(ft.Column(
+        return ft.Column(
             width=1200,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
@@ -65,8 +64,7 @@ class AIQueries(ft.UserControl):
                 ft.Text("Output:"),
                 self.tasks,
             ],
-        ))
-        return lv
+        )
     
 
     def _build_table_static(self, cols, rows, attr):
@@ -86,7 +84,7 @@ class AIQueries(ft.UserControl):
 
     # Helper method to build a table from a query output
     def _build_table(self, cols, rows):
-        lv = ft.ListView(expand=0, spacing=20, padding=20, auto_scroll=False,  height=400)
+        lv = ft.ListView(expand=0, spacing=20, padding=20, auto_scroll=False,  height=430)
         lv.controls.append(ft.DataTable(
                 border=ft.border.all(2, "white"),
                 border_radius=10,
@@ -215,7 +213,16 @@ class AIQueries(ft.UserControl):
 
             tables.append(self._build_table_static(cols, rows, attribute_display_name))
     
-        self.tasks.controls = tables
+        self.tasks.controls = [
+            ft.ListView(
+                expand=0, 
+                spacing=20, 
+                padding=20, 
+                auto_scroll=False,  
+                height=500,
+                controls = tables
+                )
+            ]
         self.update()
 
 
@@ -326,6 +333,7 @@ class AIQueries(ft.UserControl):
         cols_text = ['stance', 'count']
         cols = [ft.DataColumn(ft.Text(i)) for i in cols_text]
 
+        text = "Non Professional AI Trust"
         query = """
         SELECT s.stance, COUNT(d.devID) as count
         FROM Developer AS d
@@ -370,7 +378,8 @@ class AIQueries(ft.UserControl):
             ]
             rows.append(ft.DataRow(cells))
 
-        self.tasks.controls = [self._build_table(cols, rows)]
+        label = ft.Text(text, size=20)
+        self.tasks.controls = [label, self._build_table(cols, rows)]
         self.update()
     def usa_dev_distrust_ai(self, e):
         cursor = self.connection.cursor()
@@ -448,7 +457,7 @@ class AIQueries(ft.UserControl):
             self.usa_dev_distrust_ai(e)
 
         t = ft.Text("Pick Country to see")
-        cursor.execute("""SELECT DISTINCT name FROM Country""")
+        cursor.execute("""SELECT DISTINCT name FROM Country ORDER BY name ASC""")
         countrys = cursor.fetchall()
         options = [ft.dropdown.Option(i[0]) for i in countrys]
         #print(options)

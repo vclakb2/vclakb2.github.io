@@ -15,7 +15,7 @@ def main(page: ft.Page):
     page.scroll = 'auto'
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.window_width = 1300      
-    page.window_height = 800       
+    page.window_height = 900       
     page.window_resizable = True 
     page.theme = ft.theme.Theme(
         font_family="Verdana")
