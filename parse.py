@@ -2,7 +2,8 @@ import mysql.connector
 import csv
 
 
-filepath = "~/survey_results_public.csv"
+filepath = "C:/Users/kamal/OneDrive/Documents/db/survey_results_public.csv"
+worldpath = "C:/Users/kamal/Downloads/world.csv"
 
 PLANNING = 'Project planning'
 TESTING = 'Testing code'
@@ -47,7 +48,7 @@ OFFLINE = ['Books / Physical media',
             'Online Courses or Certification', 
             'On the job training', 
             'Other online resources (e.g., videos, blogs, forum)', 
-            'School (i.e., University, College, etc)']\
+            'School (i.e., University, College, etc)']
 
 LANGUAGES = ["Ada",
             "Apex",
@@ -157,37 +158,91 @@ LIBS = [".NET (5+)",
         "Uno Platform",
         "Xamarin"]
 
-def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath):
+def world(connection: mysql.connector.connection_cext.CMySQLConnection, filepath, start, end):
+    with open(filepath, newline='', errors='ignore') as datafile:
+        cursor = connection.cursor()
+        reader = csv.DictReader(datafile)
+        count = 0
+        print("Reading")
+        for idx, row in enumerate(reader):
+            query = "INSERT INTO World VALUES (%s, %s, %s)"
+            values = (row['Country'], row['Population'], row['pop'])
+            
+            cursor.execute(query, values)
+        connection.commit()
+    cursor.close()
+    print(count)
+
+def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath, start, end):
     cursor = connection.cursor()
-    # EducationSource
-    for entry in ONLINE:
-        query = "INSERT INTO EducationSource VALUES (%s, %s)"
-        values = (entry, True)
-        cursor.execute(query, values)
-        connection.commit()
-    for entry in OFFLINE:
-        query = "INSERT INTO EducationSource VALUES (%s, %s)"
-        values = (entry, False)
-        cursor.execute(query, values)
-        connection.commit()
+    # # EducationSource
+    # for entry in ONLINE:
+    #     query = "INSERT INTO EducationSource VALUES (%s, %s)"
+    #     values = (entry, True)
+    #     cursor.execute(query, values)
+    #     connection.commit()
+    # for entry in OFFLINE:
+    #     query = "INSERT INTO EducationSource VALUES (%s, %s)"
+    #     values = (entry, False)
+    #     cursor.execute(query, values)
+    #     connection.commit()
 
-    # Technology
-    query = "INSERT INTO Technology VALUES (%s, %s)"
-    
-    for entry in LANGUAGES:
-        values = (entry, 'LANGUAGE')
-    for entry in OS:
-        values = (entry, 'OPERATING SYSTEM')
-    for entry in LIBS:
-        values = (entry, 'LIBRARIES')
+    # # Technology
+    # query = "INSERT INTO Technology VALUES (%s, %s, %s)"
 
-    cursor.execute(query, values)
-    connection.commit()
+    # for entry in LANGUAGES:
+    #     values = (entry, None, 'LANGUAGE')
+    #     cursor.execute(query, values)
+    #     connection.commit()
+    # for entry in OS:
+    #     values = (entry, None, 'OPERATING SYSTEM')
+    #     cursor.execute(query, values)
+    #     connection.commit()
+    # for entry in LIBS:
+    #     values = (entry, None, 'LIBRARIES')
+    #     cursor.execute(query, values)
+    #     connection.commit()
     
-    with open(filepath, newline='') as datafile:
-        reader = csv.reader(datafile)
-        for row in reader:
+    with open(filepath, newline='', errors='ignore') as datafile:
+        reader = csv.DictReader(datafile)
+        count = 0
+        print("Reading")
+        for idx, row in enumerate(reader):
+            print(idx)
+            if idx <  start:
+                continue
+            if idx == end:
+                break
             id = row['ResponseId']
+            # Developer          
+            query = "INSERT INTO Developer VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            values = (id, 
+                      row['Country'] if row['Country'] != 'NA' else None, 
+                      row['Industry'] if row['Industry'] != 'NA' else None, 
+                      row['YearsCode'] if row['YearsCode'] != 'NA' else None, 
+                      row['OrgSize'] if row['OrgSize'] != 'NA' else None, 
+                      row['WorkExp'] if row['WorkExp'] != 'NA' else None,
+                      row['YearsCodePro'] if row['YearsCodePro'] != 'NA' else None,
+                      bool(row['Employment']) if row['Employment'] != 'NA' else None,
+                      row['Age'] if row['Age'] != 'NA' else None,
+                      bool(row['MainBranch']) if row['MainBranch'] != 'NA' else None,
+                      row['DevType'] if row['DevType'] != 'NA' else None,
+                      row['PurchaseInfluence'] if row['PurchaseInfluence'] != 'NA' else None,
+                      row['CodingActivities'][:150] if row['CodingActivities'] != 'NA' else None,
+                      row['RemoteWork'] if row['RemoteWork'] != 'NA' else None,
+                      row['EdLevel'] if row['EdLevel'] != 'NA' else None,
+                      row['ConvertedCompYearly'] if row['ConvertedCompYearly'] != 'NA' else None)
+            try:
+                cursor.execute(query, values)
+            except Exception as e:
+                print(values)
+                raise Exception
+            
+            # AIStance
+            query = "INSERT INTO AIStance VALUES (%s, %s, %s)"
+            values = (id, row['AISent'], row['AIBen'])
+
+            cursor.execute(query, values)
 
             # AIDevWorkflowUse
             workflow_use = [row['AIToolInterested in Using'].split(';'), 
@@ -195,7 +250,7 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
                             row['AIToolNot interested in Using'].split(';')]
             keys = [INTERESTED, USING, NOT_USING]
 
-            planning, testing, reviewing, deployment, collaborate, debugging, writing, learning, documenting = ('NULL' for _ in range(9))
+            planning, testing, reviewing, deployment, collaborate, debugging, writing, learning, documenting = (None for _ in range(9))
             for ind, category in enumerate(workflow_use):
                 if PLANNING in category:
                     planning = keys[ind]
@@ -218,9 +273,8 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
 
             query = "INSERT INTO AIDevWorkflowUse VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             values = (id, planning, learning, documenting, writing, debugging, testing, reviewing, deployment, collaborate)
+            
             cursor.execute(query, values)
-            connection.commit()
-
 
             # AIWorkflowChangein1Year
             workflow_change = [row['AINextVery different'].split(';'), 
@@ -230,7 +284,7 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
                                row['AINextVery similar'].split(';')]
             keys = [VERY_DIFFERENT, SOMEWHAT_DIFFERENT, NEUTRAL, SOMEWHAT_SIMILAR, VERY_SIMILAR]
 
-            planning, testing, reviewing, deployment, collaborate, debugging, writing, learning, documenting = ('NULL' for _ in range(9))
+            planning, testing, reviewing, deployment, collaborate, debugging, writing, learning, documenting = (None for _ in range(9))
             for ind, category in enumerate(workflow_change):
                 if PLANNING in category:
                     planning = keys[ind]
@@ -253,8 +307,8 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
 
             query = "INSERT INTO AIWorkflowChangein1Year VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             values = (id, debugging, testing, deployment, reviewing, documenting, learning, planning, writing, collaborate)
+
             cursor.execute(query, values)
-            connection.commit()
 
             # LearnsFrom
             sources = row['LearnCode'].split(';') + row['LearnCodeOnline'].split(';')
@@ -263,11 +317,18 @@ def parse(connection: mysql.connector.connection_cext.CMySQLConnection, filepath
                     query = "INSERT INTO LearnsFrom VALUES (%s, %s)"
                     values = (id, source)
                     cursor.execute(query, values)
-                    connection.commit()
 
-            # 
+            # Uses
+            sources = row['LanguageHaveWorkedWith'].split(';') + row['OpSysProfessional use'].split(';') + row['MiscTechHaveWorkedWith'].split(';')
+            for source in sources:
+                if source in LANGUAGES or source in OS or source in LIBS:
+                    query = "INSERT INTO Uses VALUES (%s, %s)"
+                    values = (id, source)
+                    cursor.execute(query, values)
 
+        connection.commit()
     cursor.close()
+    print(count)
 
 
 
@@ -278,7 +339,10 @@ def main():
         port = 13447,
         database = 'DevAI'
     )
-    parse(myConnection, filepath)
+    print("Starting")
+    start = 16000
+    end =20000
+    parse(myConnection, filepath, start, end)
     myConnection.close()
 
 if __name__ == "__main__":
